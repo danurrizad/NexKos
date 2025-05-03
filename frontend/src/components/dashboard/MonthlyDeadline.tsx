@@ -1,5 +1,4 @@
 "use client";
-import { useState } from 'react';
 import {
   Table,
   TableHeader,
@@ -12,9 +11,7 @@ import  Button from '../ui/button/Button'
 import { data } from '../../services/TableDummy'
 import { OutgoingMailIcon } from '@/icons'
 
-export default function MonthlyDeadline() {
-  const [hovered, setHovered] = useState(false)
-  
+export default function MonthlyDeadline() {  
   const parseDate = (dateStr: string): Date => {
     const [day, month, year] = dateStr.split("/").map(Number);
     return new Date(year, month - 1, day);

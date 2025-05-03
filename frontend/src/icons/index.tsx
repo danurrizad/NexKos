@@ -61,6 +61,8 @@ import BedIcon from "./bed.svg";
 import PersonIcon from "./person.svg";
 import DoorFrontIcon from "./door-front.svg";
 import DoorOpenIcon from "./door-open.svg"
+import AppRegistrationIcon from "./app-registration.svg"
+import DeleteIcon from "./delete.svg"
 
 export {
   DownloadIcon,
@@ -125,5 +127,7 @@ export {
   BedIcon,
   PersonIcon,
   DoorFrontIcon,
-  DoorOpenIcon
+  DoorOpenIcon,
+  AppRegistrationIcon,
+  DeleteIcon
 };
