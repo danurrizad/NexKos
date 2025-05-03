@@ -1,0 +1,28 @@
+export const data = [
+    { id: 1, roomNumber: "01", deadline: "12/05/2025", status: "lunas" },
+    { id: 2, roomNumber: "02", deadline: "23/05/2025", status: "belum bayar" },
+    { id: 3, roomNumber: "03", deadline: "17/05/2025", status: "lunas" },
+    { id: 4, roomNumber: "04", deadline: "04/05/2025", status: "belum bayar" },
+    { id: 5, roomNumber: "05", deadline: "28/05/2025", status: "lunas" },
+    { id: 6, roomNumber: "06", deadline: "09/05/2025", status: "belum bayar" },
+    { id: 7, roomNumber: "07", deadline: "14/05/2025", status: "lunas" },
+    { id: 8, roomNumber: "08", deadline: "21/05/2025", status: "belum bayar" },
+    { id: 9, roomNumber: "09", deadline: "07/05/2025", status: "lunas" },
+    { id: 10, roomNumber: "10", deadline: "25/05/2025", status: "belum bayar" },
+    { id: 11, roomNumber: "11", deadline: "06/05/2025", status: "lunas" },
+    { id: 12, roomNumber: "12", deadline: "16/05/2025", status: "belum bayar" },
+    { id: 13, roomNumber: "13", deadline: "02/05/2025", status: "lunas" },
+    { id: 14, roomNumber: "14", deadline: "18/05/2025", status: "belum bayar" },
+    { id: 15, roomNumber: "15", deadline: "05/05/2025", status: "lunas" },
+    { id: 16, roomNumber: "16", deadline: "13/05/2025", status: "belum bayar" },
+    { id: 17, roomNumber: "17", deadline: "29/05/2025", status: "lunas" },
+    { id: 18, roomNumber: "18", deadline: "03/05/2025", status: "belum bayar" },
+    { id: 19, roomNumber: "19", deadline: "26/05/2025", status: "lunas" },
+    { id: 20, roomNumber: "20", deadline: "22/05/2025", status: "belum bayar" },
+    { id: 21, roomNumber: "21", deadline: "08/05/2025", status: "lunas" },
+    { id: 22, roomNumber: "22", deadline: "27/05/2025", status: "belum bayar" },
+    { id: 23, roomNumber: "23", deadline: "01/05/2025", status: "lunas" },
+    { id: 24, roomNumber: "24", deadline: "15/05/2025", status: "belum bayar" },
+    { id: 25, roomNumber: "25", deadline: "11/05/2025", status: "lunas" }
+  ];
+  
