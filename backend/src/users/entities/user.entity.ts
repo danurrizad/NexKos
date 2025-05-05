@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 import { Gender } from '../enums/gender.enum';
 import { Role } from '../enums/role.enum';
 
@@ -31,6 +31,9 @@ export class User {
   })
   role: Role;
 
-  @Column({ nullable: true })
-  refreshToken: string;
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @CreateDateColumn()
+  updatedAt: Date;
 }
