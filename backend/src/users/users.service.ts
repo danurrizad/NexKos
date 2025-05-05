@@ -18,25 +18,19 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async findByEmail(email: string): Promise<User> {
+  async findByEmail(email: string): Promise<User | null> {
     if (!email) {
       throw new BadRequestException('Email is required');
     }
     const user = await this.usersRepository.findOne({ where: { email } });
-    if (!user) {
-      throw new NotFoundException(`User with email ${email} not found`);
-    }
     return user;
   }
 
-  async findByPhone(phone: string): Promise<User> {
+  async findByPhone(phone: string): Promise<User | null> {
     if (!phone) {
       throw new BadRequestException('Phone number is required');
     }
     const user = await this.usersRepository.findOne({ where: { phone } });
-    if (!user) {
-      throw new NotFoundException(`User with phone ${phone} not found`);
-    }
     return user;
   }
 
