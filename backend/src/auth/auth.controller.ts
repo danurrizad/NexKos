@@ -14,6 +14,7 @@ class RefreshTokenDto {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // @Public()
   @Roles(Role.ADMIN, Role.OWNER)
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
