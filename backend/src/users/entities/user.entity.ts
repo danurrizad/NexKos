@@ -14,7 +14,7 @@ export class User {
   phone: string;
 
   @Column()
-  passwordHash: string;
+  password: string;
 
   @Column()
   name: string;
@@ -30,6 +30,9 @@ export class User {
     enum: Role,
   })
   role: Role;
+
+  @Column({ nullable: true })
+  profilePicture: string;
 
   @CreateDateColumn()
   createdAt: Date;
