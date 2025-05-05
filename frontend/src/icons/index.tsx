@@ -63,6 +63,12 @@ import DoorFrontIcon from "./door-front.svg";
 import DoorOpenIcon from "./door-open.svg"
 import AppRegistrationIcon from "./app-registration.svg"
 import DeleteIcon from "./delete.svg"
+import CheckIcon from "./check.svg"
+import ScheduleIcon from "./schedule.svg"
+import ErrorCircleIcon from "./error.svg"
+import OpenNewIcon from "./open-new.svg"
+import CurrencyExchangeIcon from "./currency-exchange.svg"
+import DevicesIcon from "./devices.svg"
 
 export {
   DownloadIcon,
@@ -129,5 +135,11 @@ export {
   DoorFrontIcon,
   DoorOpenIcon,
   AppRegistrationIcon,
-  DeleteIcon
+  DeleteIcon,
+  CheckIcon,
+  ScheduleIcon,
+  ErrorCircleIcon,
+  OpenNewIcon,
+  CurrencyExchangeIcon,
+  DevicesIcon
 };

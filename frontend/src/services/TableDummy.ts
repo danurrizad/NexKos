@@ -81,4 +81,32 @@ export const data = [
     { id: 24, roomNumber: "24", totalTenant: 2, tenants: [{ name: "Oki Mahendra" }, { name: "Rizky Oktavian" }], dateIn: "18/03/2025" },
     { id: 25, roomNumber: "25", totalTenant: 1, tenants: [{ name: "Alif Kurniawan" }], dateIn: "04/02/2025" },
   ];
+
+  export const dataTagihan = [
+    { id: 1, roomNumber: "01", tenant: "Rizky Pratama", month: "Juni", year: "2025", price: 1000000, deadline: "07/02/2025", paymentMethod: "manual", status: "lunas" },
+    { id: 2, roomNumber: "02", tenant: "Andi Nugroho", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "gateway", status: "pending" },
+    { id: 3, roomNumber: "03", tenant: "Deni Saputra", month: "Juni", year: "2025", price: 1000000, deadline: "07/02/2025", paymentMethod: "transfer", status: "belum bayar" },
+    { id: 4, roomNumber: "04", tenant: "Wawan Setiawan", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "manual", status: "lunas" },
+    { id: 5, roomNumber: "05", tenant: "Joko Santoso", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "gateway", status: "belum bayar" },
+    { id: 6, roomNumber: "06", tenant: "Fajar Rahman", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "transfer", status: "pending" },
+    { id: 7, roomNumber: "07", tenant: "Gilang Kurniawan", month: "Juni", year: "2025", price: 1000000, deadline: "07/02/2025", paymentMethod: "manual", status: "belum bayar" },
+    { id: 8, roomNumber: "08", tenant: "Bayu Saputro", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "gateway", status: "pending" },
+    { id: 9, roomNumber: "09", tenant: "Dewangga Febrianto", month: "Juni", year: "2025", price: 1000000, deadline: "07/02/2025", paymentMethod: "transfer", status: "lunas" },
+    { id: 10, roomNumber: "10", tenant: "Rama Wicaksono", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "manual", status: "belum bayar" },
+    { id: 11, roomNumber: "11", tenant: "Ilham Yulianto", month: "Juni", year: "2025", price: 1000000, deadline: "07/02/2025", paymentMethod: "transfer", status: "pending" },
+    { id: 12, roomNumber: "12", tenant: "Satria Handoko", month: "Juni", year: "2025", price: 1000000, deadline: "07/02/2025", paymentMethod: "manual", status: "lunas" },
+    { id: 13, roomNumber: "13", tenant: "Melky Gunawan", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "gateway", status: "belum bayar" },
+    { id: 14, roomNumber: "14", tenant: "Zaki Ramadhan", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "transfer", status: "lunas" },
+    { id: 15, roomNumber: "15", tenant: "Ayu Kartika", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "manual", status: "pending" },
+    { id: 16, roomNumber: "16", tenant: "Rendi Saputra", month: "Juni", year: "2025", price: 1000000, deadline: "07/02/2025", paymentMethod: "gateway", status: "lunas" },
+    { id: 17, roomNumber: "17", tenant: "Indra Wibowo", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "manual", status: "belum bayar" },
+    { id: 18, roomNumber: "18", tenant: "Eka Yulian", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "transfer", status: "lunas" },
+    { id: 19, roomNumber: "19", tenant: "Nico Prameswara", month: "Juni", year: "2025", price: 1000000, deadline: "07/02/2025", paymentMethod: "gateway", status: "belum bayar" },
+    { id: 20, roomNumber: "20", tenant: "Rico Aditya", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "manual", status: "pending" },
+    { id: 21, roomNumber: "21", tenant: "Candra Ananta", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "gateway", status: "lunas" },
+    { id: 22, roomNumber: "22", tenant: "Agus Saputra", month: "Juni", year: "2025", price: 1000000, deadline: "07/02/2025", paymentMethod: "transfer", status: "pending" },
+    { id: 23, roomNumber: "23", tenant: "Yani Rahayu", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "manual", status: "lunas" },
+    { id: 24, roomNumber: "24", tenant: "Oki Mahendra", month: "Juni", year: "2025", price: 1000000, deadline: "07/02/2025", paymentMethod: "gateway", status: "belum bayar" },
+    { id: 25, roomNumber: "25", tenant: "Alif Kurniawan", month: "Juni", year: "2025", price: 1500000, deadline: "07/02/2025", paymentMethod: "transfer", status: "lunas" }
+  ];
   

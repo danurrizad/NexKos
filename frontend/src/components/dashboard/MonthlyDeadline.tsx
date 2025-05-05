@@ -10,6 +10,7 @@ import  Button from '../ui/button/Button'
 
 import { data } from '../../services/TableDummy'
 import { OutgoingMailIcon } from '@/icons'
+import Badge from '../ui/badge/Badge';
 
 export default function MonthlyDeadline() {  
   const parseDate = (dateStr: string): Date => {
@@ -77,13 +78,18 @@ export default function MonthlyDeadline() {
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{index+1}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.roomNumber}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.deadline}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm flex justify-center items-center h-full">
+                      <Badge color={data.status==='lunas' ? 'success' : 'error'}>
+                        {data.status.toUpperCase()}
+                      </Badge>
+                    </TableCell>
+                    {/* <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
                       <div className={`${data.status === 'lunas' ? "bg-green-200" : "bg-red-200"} rounded-sm text-center`}>
                         <span className={`font-bold ${data.status === 'lunas' ? "text-green-800" : "text-red-800"}`}>
                           {data.status.toUpperCase()}
                         </span>
                       </div>
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell className="px-5 py-4 sm:px-6 text-center text-theme-sm">
                       <Button disabled={data.status === 'lunas'} size='sm' className={`bg-white ${data.status !== 'lunas' && 'hover:bg-blue-500'} shadow-md group`}>
                         <OutgoingMailIcon className={`text-[#0077FF] ${data.status !== "lunas" && "group-hover:text-white"}`}/>

@@ -14,6 +14,7 @@ import{
 import Button from "@/components/ui/button/Button";
 import { dataKamar } from '@/services/TableDummy'
 import { AppRegistrationIcon, DeleteIcon } from "@/icons";
+import Badge from "@/components/ui/badge/Badge";
 
 export default function ManajemenKamar() {
   return (
@@ -29,12 +30,6 @@ export default function ManajemenKamar() {
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
               <TableRow>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  No
-                </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
@@ -77,11 +72,15 @@ export default function ManajemenKamar() {
               { dataKamar.map((data, index)=>{
                 return(
                   <TableRow key={index}>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{index+1}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.roomNumber}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.floorUnit}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.capacity}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 flex justify-center dark:text-white text-theme-sm">
+                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm flex justify-center items-center h-full">
+                      <Badge color={ data.status==='nonaktif' ? 'dark' : data.status==='terisi' ? 'success' : data.status==='kosong' ? 'info' : 'light'}>
+                        {data.status.toUpperCase()}
+                      </Badge>
+                    </TableCell>
+                    {/* <TableCell className="px-5 py-4 sm:px-6 flex justify-center dark:text-white text-theme-sm">
                       <div 
                         className={`
                           text-center w-fit px-4
@@ -89,7 +88,7 @@ export default function ManajemenKamar() {
                         >
                         {data.status.toUpperCase()}
                       </div>
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
                       {data.price.toLocaleString('id-ID',{
                         style: 'currency',
