@@ -8,6 +8,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
+import { LogEntriesModule } from './log-entries/log-entries.module';
 
 @Module({
   imports: [
@@ -24,13 +25,16 @@ import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
         database: config.get<string>('DATABASE_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         logging: true,
-        autoLoadEntities: true, // fungsinya untuk membuat entity secara otomatis
-        synchronize: true, // fungsinya untuk membuat table jika belum ada dalam database
-        namingStrategy: new SnakeNamingStrategy(), // fungsinya untuk membuat snake_case
+        autoLoadEntities: true,
+        synchronize: true,
+        // migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+        // migrationsRun: true,
+        namingStrategy: new SnakeNamingStrategy(),
       }),
     }),
     UsersModule,
     AuthModule,
+    LogEntriesModule,
   ],
   controllers: [AppController],
   providers: [
