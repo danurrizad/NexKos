@@ -29,7 +29,7 @@ export default function ManajemenTagihan() {
 
   return (
     <div className="">
-      <Card>
+      <Card className="overflow-x-auto">
         {/* <CardHeader>
           <Button className="bg-white border-gray-400 border-1 border-solid ">
             + Tambah Kamar

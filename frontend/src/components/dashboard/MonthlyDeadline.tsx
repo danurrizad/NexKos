@@ -34,7 +34,7 @@ export default function MonthlyDeadline() {
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
           Jatuh Tempo Pembayaran
         </h3>
-        <div>
+        <div className='overflow-x-auto'>
           <Table>
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
