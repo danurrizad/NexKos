@@ -21,7 +21,7 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<User | null> {
     if (!email) {
-      throw new BadRequestException('Email is required');
+      throw new BadRequestException('Email dibutuhkan'); 
     }
     const user = await this.usersRepository.findOne({ where: { email } });
     return user;
@@ -29,7 +29,7 @@ export class UsersService {
 
   async findByPhone(phone: string): Promise<User | null> {
     if (!phone) {
-      throw new BadRequestException('Phone number is required');
+      throw new BadRequestException('Nomor telepon dibutuhkan');
     }
     const user = await this.usersRepository.findOne({ where: { phone } });
     return user;
@@ -42,7 +42,7 @@ export class UsersService {
 
     if (existingUser) {
       throw new BadRequestException(
-        'User with this email or phone already exists',
+        'User dengan email atau nomor telepon ini sudah ada',
       );
     }
 
@@ -71,7 +71,7 @@ export class UsersService {
     });
 
     if (users.length === 0) {
-      throw new NotFoundException('No users found');
+      throw new NotFoundException('Tidak ada user yang ditemukan');
     }
 
     const totalPages = Math.ceil(total / limit);
@@ -89,11 +89,11 @@ export class UsersService {
 
   async findById(id: number): Promise<User> {
     if (!id) {
-      throw new BadRequestException('User ID is required');
+      throw new BadRequestException('ID user dibutuhkan');
     }
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`User dengan ID ${id} tidak ditemukan`);
     }
     return user;
   }

@@ -10,6 +10,9 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
 import { LogEntriesModule } from './log-entries/log-entries.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { BoardingHousesModule } from './boarding-houses/boarding-houses.module';
+import { RoomsModule } from './rooms/rooms.module';
+import { FacilitiesModule } from './facilities/facilities.module';
 
 @Module({
   imports: [
@@ -36,6 +39,9 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     UsersModule,
     AuthModule,
     LogEntriesModule,
+    BoardingHousesModule,
+    RoomsModule,
+    FacilitiesModule,
   ],
   controllers: [AppController],
   providers: [
