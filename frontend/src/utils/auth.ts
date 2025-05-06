@@ -1,6 +1,7 @@
 import axios from 'axios';
+import config from './config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = config.BACKEND_URL || 'http://localhost:5000';
 
 export const setTokens = (accessToken: string, refreshToken: string) => {
   localStorage.setItem('access_token', accessToken);

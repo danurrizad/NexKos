@@ -1,10 +1,22 @@
 "use client";
 
+import { useAlert } from "@/context/AlertContext";
 import { useSidebar } from "@/context/SidebarContext";
 import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
-import React from "react";
+import { refreshAccessToken } from "@/utils/auth";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+
+interface ErrorResponse {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
+}
 
 export default function AdminLayout({
   children,
@@ -12,6 +24,33 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+  // const router = useRouter()
+  // const { showAlert } = useAlert()
+  // const [runCheck, setRunCheck] = useState<boolean>(false)
+  
+  // useEffect(()=>{
+  //   const checkToken = async() =>{
+  //     try{
+  //       setRunCheck(true)
+  //       const refreshToken = await refreshAccessToken()
+  //       if(!refreshToken){
+  //         router.push("/signin")
+  //       }
+  //     } catch(error: unknown){
+  //       const typedError = error as ErrorResponse
+  //       showAlert({
+  //         variant: "error",
+  //         title: "Error!",
+  //         message: typedError?.response?.data?.message || "Server error!",
+  //       })
+  //       router.push("/signin")
+  //     }
+  //   }
+  //   if(!runCheck){
+  //     checkToken()
+  //   }
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [router])
 
   // Dynamic class for main content margin based on sidebar state
   const mainContentMargin = isMobileOpen
