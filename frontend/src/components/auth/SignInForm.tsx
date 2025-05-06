@@ -16,11 +16,6 @@ interface FormInterface {
   password: string
 }
 
-interface ErrMsgInterface {
-  email: boolean,
-  password: boolean
-}
-
 export default function SignInForm() {
   const { showAlert } = useAlert()
   const [loading, setLoading] = useState<boolean>(false)
@@ -29,10 +24,8 @@ export default function SignInForm() {
     email: "",
     password: ""
   })
-  const [showErrMsg, setShowErrMsg] = useState<ErrMsgInterface>({
-    email: false,
-    password: false
-  })
+  const [errorEmail, setErrorEmail] = useState<boolean>(false)
+  const [errorPass, setErrorPass] = useState<boolean>(false)
   const { login } = useAuthService()
   const router = useRouter()
 
@@ -40,22 +33,21 @@ export default function SignInForm() {
     try {
       setLoading(true)
       e.preventDefault()
-      console.log({form: form.email})
       if(form.email === "" || form.password === ""){
         if(form.email === ""){
-          console.log("disini")
-          setShowErrMsg({ ...showErrMsg, email: true})
+          setErrorEmail(true)
         }
         if(form.password === ""){
-          setShowErrMsg({ ...showErrMsg, password: true})
+          setErrorPass(true)
         }
         return
       }
-      setShowErrMsg({ email: false, password: false})
+      setErrorEmail(false)
+      setErrorPass(false)
       const response = await login(form)
-      console.log("response login:", response)
+      console.log("response login: ", response)
       if(response?.status===201){
-        setTokens(response.data.accessToken, response.data.refreshToken)
+        setTokens(response.data.access_token, response.data.refresh_token)
       }
       router.push("/")
       showAlert({
@@ -99,12 +91,12 @@ export default function SignInForm() {
                     placeholder="Masukkan email yang terdaftar" 
                     defaultValue={form?.email} 
                     onChange={(e)=>{
-                      setShowErrMsg({ ...showErrMsg, email: false})
+                      setErrorEmail(false)
                       setForm({...form, email: e.target.value})
                     }} 
-                    className={`${ showErrMsg.email && "border-red-600"}`}
+                    className={`${ errorEmail && "border-red-600"}`}
                   />
-                  { showErrMsg.email && <Label className="text-red-600 font-light">Silakan masukkan email terlebih dahulu</Label>}
+                  { errorEmail && <Label className="text-red-600 font-light">Silakan masukkan email terlebih dahulu</Label>}
                 </div>
                 <div>
                   <Label>
@@ -116,10 +108,10 @@ export default function SignInForm() {
                       placeholder="Masukkan password"
                       defaultValue={form?.password}
                       onChange={(e)=>{
-                        setShowErrMsg({ ...showErrMsg, password: false})
+                        setErrorPass(false)
                         setForm({ ...form, password: e.target.value})
                       }}
-                      className={`${ showErrMsg.password && "border-red-600"}`}
+                      className={`${ errorPass && "border-red-600"}`}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -132,7 +124,7 @@ export default function SignInForm() {
                       )}
                     </span>
                   </div>
-                  {showErrMsg.password && <Label className="text-red-600 font-light">Silakan masukkan password Anda</Label>}
+                  {errorPass && <Label className="text-red-600 font-light">Silakan masukkan password Anda</Label>}
                 </div>
                 <div className="flex items-center justify-between">
                   <Link
