@@ -29,7 +29,6 @@ export const useAlert = () => {
 
 export const AlertProvider = ({ children }: { children: ReactNode }) => {
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
-  console.log("ALERTS? :", alerts)
 
   const showAlert = (alert: Omit<AlertItem, "id">) => {
     const newAlert = { ...alert, id: new Date().toISOString() };
