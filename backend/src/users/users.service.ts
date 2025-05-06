@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { Request } from 'express';
 import {
   PaginationOptions,
   PaginatedResult,
@@ -34,7 +35,7 @@ export class UsersService {
     return user;
   }
 
-  async create(userData: Partial<User>): Promise<User> {
+  async create(userData: Partial<User>, req?: Request): Promise<User> {
     const existingUser = await this.usersRepository.findOne({
       where: [{ email: userData.email }, { phone: userData.phone }],
     });

@@ -1,10 +1,11 @@
-import { Body, Controller, Post, Req } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/auth.register.dto';
 import { LoginDto } from './dto/auth.login.dto';
 import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/roles.decorator';
 import { Role } from 'src/users/enums/role.enum';
+import { LoginLoggingInterceptor } from './interceptors/login-logging.interceptor';
 
 class RefreshTokenDto {
   refresh_token: string;
@@ -22,6 +23,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseInterceptors(LoginLoggingInterceptor)
   @Post('login')
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);

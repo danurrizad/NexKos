@@ -9,10 +9,13 @@ import { RolesGuard } from './guards/roles.guard';
 import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
+import { LogEntriesModule } from '../log-entries/log-entries.module';
+import { LoginLoggingInterceptor } from './interceptors/login-logging.interceptor';
 
 @Module({
   imports: [
     UsersModule,
+    LogEntriesModule,
     TypeOrmModule.forFeature([RefreshToken]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -23,7 +26,13 @@ import { RefreshToken } from './entities/refresh-token.entity';
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy, RolesGuard, JwtAuthGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    RolesGuard,
+    JwtAuthGuard,
+    LoginLoggingInterceptor,
+  ],
   controllers: [AuthController],
   exports: [AuthService, JwtAuthGuard],
 })
