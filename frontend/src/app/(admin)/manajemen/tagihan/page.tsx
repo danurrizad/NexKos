@@ -14,6 +14,13 @@ import Button from "@/components/ui/button/Button";
 import { dataTagihan } from '@/services/TableDummy'
 import { CheckIcon, ScheduleIcon, ErrorCircleIcon, OpenNewIcon, FileIcon, CurrencyExchangeIcon, DevicesIcon } from "@/icons";
 import Badge from "@/components/ui/badge/Badge";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title:
+    "NexKos | Manajemen Tagihan",
+  description: "Kos Management App",
+};
 
 export default function ManajemenTagihan() {
   const renderBodyStatus = (data: string) => {

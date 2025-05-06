@@ -15,6 +15,14 @@ import Button from "@/components/ui/button/Button";
 import { dataKamar } from '@/services/TableDummy'
 import { AppRegistrationIcon, DeleteIcon } from "@/icons";
 import Badge from "@/components/ui/badge/Badge";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title:
+    "NexKos | Manajemen Kamar",
+  description: "Kos Management App",
+};
+
 
 export default function ManajemenKamar() {
   return (

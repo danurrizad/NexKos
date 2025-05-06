@@ -14,6 +14,14 @@ import{
 import Button from "@/components/ui/button/Button";
 import { dataPenghuni } from '@/services/TableDummy'
 import { AppRegistrationIcon, DeleteIcon } from "@/icons";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title:
+    "NexKos | Manajemen Penghuni",
+  description: "Kos Management App",
+};
+
 
 export default function ManajemenPenghuni() {
   return (

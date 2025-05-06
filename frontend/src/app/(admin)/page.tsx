@@ -8,7 +8,7 @@ import MonthlySummary from "@/components/dashboard/MonthlySummary";
 
 export const metadata: Metadata = {
   title:
-    "NexKos",
+    "NexKos | Dashbord",
   description: "Kos Management App",
 };
 
