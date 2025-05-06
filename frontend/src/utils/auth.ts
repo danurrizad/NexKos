@@ -1,7 +1,7 @@
 import axios from 'axios';
-import config from './config';
-
-const API_URL = config.BACKEND_URL || 'http://localhost:5000';
+import axiosInstance from './AxiosInstance';
+import { jwtDecode } from 'jwt-decode'
+import { useEffect, useState } from 'react';
 
 export const setTokens = (accessToken: string, refreshToken: string) => {
   localStorage.setItem('access_token', accessToken);
@@ -22,11 +22,12 @@ export const clearTokens = () => {
 export const refreshAccessToken = async () => {
   const { refreshToken } = getTokens();
   if (!refreshToken) {
+    window.location.href = '/signin';
     throw new Error('No refresh token available');
   }
 
   try {
-    const response = await axios.post(`${API_URL}/auth/refresh`, {
+    const response = await axiosInstance.post(`auth/refresh`, {
       refresh_token: refreshToken,
     });
 
@@ -43,26 +44,26 @@ export const logout = async () => {
   try {
     const { accessToken } = getTokens();
     if (accessToken) {
-      await axios.post(
-        `${API_URL}/auth/logout`,
-        {},
+      const response = await axiosInstance.post(
+        `auth/logout`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
+      clearTokens();
+      return response
     }
   } catch (error) {
     console.error('Logout error:', error);
   } finally {
     clearTokens();
-    window.location.href = '/signin';
   }
 };
 
 // Axios interceptor to handle token refresh
-axios.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
@@ -84,3 +85,42 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 ); 
+
+interface DecodedInterface{
+  email: string,
+  name: string,
+  role: string
+}
+
+const useAuth = () => {
+  const [decodedUser, setDecodedUser] = useState<DecodedInterface>({
+    email: "",
+    name: "",
+    role: ""
+  })
+  const decodeToken = async() => {
+    try {
+      const { accessToken } = getTokens()
+      if (accessToken){
+        const decoded: DecodedInterface = jwtDecode(accessToken)
+        setDecodedUser(decoded)
+      }else{
+        const newAccessToken = await refreshAccessToken()
+        const decoded: DecodedInterface = jwtDecode(newAccessToken)
+        setDecodedUser(decoded)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(()=>{
+    decodeToken()
+  }, [])
+
+  return { 
+    decodedUser
+  }
+}
+
+export default useAuth
