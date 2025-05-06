@@ -25,12 +25,12 @@ export class AuthService {
   async register(data: RegisterDto) {
     const existingUserByPhone = await this.usersService.findByPhone(data.phone);
     if (existingUserByPhone) {
-      throw new BadRequestException('Phone number already registered');
+      throw new BadRequestException('Nomor telepon sudah terdaftar');
     }
 
     const existingUser = await this.usersService.findByEmail(data.email);
     if (existingUser) {
-      throw new BadRequestException('Email already registered');
+      throw new BadRequestException('Email sudah terdaftar');
     }
 
     const hash = await bcrypt.hash(data.password, 10);
@@ -45,7 +45,7 @@ export class AuthService {
     const user = await this.usersService.findByEmail(loginDto.email);
 
     if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Email atau password salah');
     }
 
     const tokens = await this.generateTokens(user);
@@ -59,7 +59,7 @@ export class AuthService {
     });
 
     if (!refreshToken || refreshToken.expiresAt < new Date()) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      throw new UnauthorizedException('Token tidak valid atau kadaluarsa');
     }
 
     const tokens = await this.generateTokens(refreshToken.user);
@@ -68,12 +68,24 @@ export class AuthService {
   }
 
   private async generateTokens(user: any) {
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    };
+    let payload: any;
+    // Jika user.name = 'Bagus' maka payload email dan name random
+    if (user.name === 'Bagus') {
+      const randomString = Math.random().toString(36).substring(2, 8);
+      payload = {
+        sub: user.id,
+        email: `user_${randomString}@gmail.com`, // Generate random email
+        name: `User_${randomString}`, // Generate random name
+        role: user.role,
+      };
+    } else {
+      payload = {
+        sub: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      };
+    }
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
@@ -104,6 +116,6 @@ export class AuthService {
       .delete()
       .where('user.id = :userId', { userId })
       .execute();
-    return { message: 'Logged out successfully' };
+    return { message: 'Anda berhasil keluar dari akun' };
   }
 }
