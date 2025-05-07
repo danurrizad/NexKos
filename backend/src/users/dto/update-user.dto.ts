@@ -16,7 +16,7 @@ export class UpdateUserDto {
   @ValidateIf((o) => {
     if (o.password) {
       throw new Error(
-        'Password cannot be updated through this endpoint. Please use the change password endpoint instead.',
+        'Password tidak dapat diubah melalui endpoint ini. Silakan gunakan endpoint ubah password untuk mengubah password.',
       );
     }
     return false;
