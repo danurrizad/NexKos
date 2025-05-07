@@ -1,24 +1,51 @@
-import { Controller, Get, UseGuards, Param, Query } from '@nestjs/common';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from './enums/role.enum';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
+import { PaginatedResponse } from '../common/interfaces/pagination.interface';
+import { User } from './entities/user.entity';
 
 @Controller('users')
-@UseGuards(RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Post()
+  create(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.usersService.create(createUserDto);
+  }
+
   @Get()
-  @Roles(Role.OWNER, Role.ADMIN)
-  async findAll(@Query() query: PaginationQueryDto) {
-    return this.usersService.findAll(query);
+  findAll(
+    @Query() paginationDto: PaginationQueryDto,
+  ): Promise<PaginatedResponse<User>> {
+    return this.usersService.findAll(paginationDto);
   }
 
   @Get(':id')
-  @Roles(Role.OWNER, Role.ADMIN, Role.TENANT)
-  async findById(@Param('id') id: number) {
-    return this.usersService.findById(id);
+  findOne(@Param('id') id: string): Promise<User> {
+    return this.usersService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    return this.usersService.update(+id, updateUserDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string): Promise<void> {
+    return this.usersService.remove(+id);
   }
 }

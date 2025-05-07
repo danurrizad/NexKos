@@ -6,11 +6,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { Request } from 'express';
-import {
-  PaginationOptions,
-  PaginatedResult,
-} from '../common/interfaces/pagination.interface';
+import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
+import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 
 @Injectable()
 export class UsersService {
@@ -21,48 +21,35 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<User | null> {
     if (!email) {
-      throw new BadRequestException('Email dibutuhkan'); 
+      throw new BadRequestException('Email dibutuhkan');
     }
-    const user = await this.usersRepository.findOne({ where: { email } });
-    return user;
+    return this.usersRepository.findOne({ where: { email } });
   }
 
-  async findByPhone(phone: string): Promise<User | null> {
-    if (!phone) {
-      throw new BadRequestException('Nomor telepon dibutuhkan');
-    }
-    const user = await this.usersRepository.findOne({ where: { phone } });
-    return user;
-  }
-
-  async create(userData: Partial<User>, req?: Request): Promise<User> {
-    const existingUser = await this.usersRepository.findOne({
-      where: [{ email: userData.email }, { phone: userData.phone }],
-    });
-
-    if (existingUser) {
-      throw new BadRequestException(
-        'User dengan email atau nomor telepon ini sudah ada',
-      );
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    // Check if email already exists
+    const existingEmail = await this.findByEmail(createUserDto.email);
+    if (existingEmail) {
+      throw new BadRequestException('Email sudah terdaftar');
     }
 
-    const newUser = this.usersRepository.create(userData);
-    return this.usersRepository.save(newUser);
+    // Create new user
+    const user = this.usersRepository.create(createUserDto);
+
+    return this.usersRepository.save(user);
   }
 
   async findAll(
-    options: PaginationOptions = {},
-  ): Promise<PaginatedResult<User>> {
-    const { page = 1, limit = 10, orderBy = 'id', order = 'ASC' } = options;
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResponse<User>> {
+    const {
+      page = 1,
+      limit = 10,
+      orderBy = 'id',
+      order = 'ASC',
+    } = paginationQuery;
 
-    if (page < 1) {
-      throw new BadRequestException('Page number must be greater than 0');
-    }
-    if (limit < 1) {
-      throw new BadRequestException('Limit must be greater than 0');
-    }
-
-    const [users, total] = await this.usersRepository.findAndCount({
+    const [data, total] = await this.usersRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
       order: {
@@ -70,14 +57,10 @@ export class UsersService {
       },
     });
 
-    if (users.length === 0) {
-      throw new NotFoundException('Tidak ada user yang ditemukan');
-    }
-
     const totalPages = Math.ceil(total / limit);
 
     return {
-      data: users,
+      data,
       meta: {
         total,
         page,
@@ -87,14 +70,40 @@ export class UsersService {
     };
   }
 
-  async findById(id: number): Promise<User> {
-    if (!id) {
-      throw new BadRequestException('ID user dibutuhkan');
-    }
+  async findOne(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
+
     if (!user) {
       throw new NotFoundException(`User dengan ID ${id} tidak ditemukan`);
     }
+
     return user;
+  }
+
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+
+    // If email is being updated, check if it already exists
+    if (updateUserDto.email && updateUserDto.email !== user.email) {
+      const existingEmail = await this.findByEmail(updateUserDto.email);
+      if (existingEmail) {
+        throw new BadRequestException('Email sudah terdaftar');
+      }
+    }
+
+    // If password is being updated, hash it
+    if (updateUserDto.password) {
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+
+    return this.usersRepository.save({
+      ...user,
+      ...updateUserDto,
+    });
+  }
+
+  async remove(id: number): Promise<void> {
+    const user = await this.findOne(id);
+    await this.usersRepository.remove(user);
   }
 }

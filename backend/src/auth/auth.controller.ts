@@ -6,10 +6,12 @@ import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/roles.decorator';
 import { Role } from 'src/users/enums/role.enum';
 import { LoginLoggingInterceptor } from './interceptors/login-logging.interceptor';
-
-class RefreshTokenDto {
-  refresh_token: string;
-}
+import {
+  LogoutResponse,
+  RefreshTokenDto,
+  RequestWithUser,
+  TokenResponse,
+} from './interfaces/auth.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -26,18 +28,20 @@ export class AuthController {
   @Public()
   @UseInterceptors(LoginLoggingInterceptor)
   @Post('login')
-  login(@Body() loginDto: LoginDto) {
+  login(@Body() loginDto: LoginDto): Promise<TokenResponse> {
     return this.authService.login(loginDto);
   }
 
   @Public()
   @Post('refresh')
-  refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+  refreshToken(
+    @Body() refreshTokenDto: RefreshTokenDto,
+  ): Promise<TokenResponse> {
     return this.authService.refreshToken(refreshTokenDto.refresh_token);
   }
 
   @Post('logout')
-  async logout(@Req() req: any) {
+  async logout(@Req() req: RequestWithUser): Promise<LogoutResponse> {
     return this.authService.logout(req.user.sub);
   }
 }
