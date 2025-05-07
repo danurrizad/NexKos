@@ -18,7 +18,7 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {
   @IsOptional()
   status?: Status;
 
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsOptional()
   price?: number;
 

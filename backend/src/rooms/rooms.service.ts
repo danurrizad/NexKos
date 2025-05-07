@@ -27,7 +27,7 @@ export class RoomsService {
     });
     if (!boardingHouse) {
       throw new NotFoundException(
-        `BoardingHouse with ID ${boardingHouseId} not found`,
+        `Rumah Kos dengan ID ${boardingHouseId} tidak ditemukan`,
       );
     }
 
@@ -39,7 +39,7 @@ export class RoomsService {
         id: In(facilityIds),
       });
       if (facilities.length !== facilityIds.length) {
-        throw new NotFoundException('One or more facilities not found');
+        throw new NotFoundException('Satu atau lebih fasilitas tidak ditemukan');
       }
       room.facilities = facilities;
     }
@@ -82,7 +82,7 @@ export class RoomsService {
     });
 
     if (!room) {
-      throw new NotFoundException(`Room with ID ${id} not found`);
+      throw new NotFoundException(`Kamar dengan ID ${id} tidak ditemukan`);
     }
 
     return room;
@@ -97,7 +97,7 @@ export class RoomsService {
         id: In(facilityIds),
       });
       if (facilities.length !== facilityIds.length) {
-        throw new NotFoundException('One or more facilities not found');
+        throw new NotFoundException('Satu atau lebih fasilitas tidak ditemukan');
       }
       room.facilities = facilities;
     }

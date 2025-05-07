@@ -17,7 +17,7 @@ export class CreateRoomDto {
   @IsNotEmpty()
   status: Status;
 
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsNotEmpty()
   price: number;
 
