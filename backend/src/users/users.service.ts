@@ -32,14 +32,8 @@ export class UsersService {
       throw new BadRequestException('Email sudah terdaftar');
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
     // Create new user
-    const user = this.usersRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
-    });
+    const user = this.usersRepository.create(createUserDto);
 
     return this.usersRepository.save(user);
   }

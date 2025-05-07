@@ -44,7 +44,7 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<TokenResponse> {
     const user = await this.usersService.findByEmail(loginDto.email);
-
+    console.log('userrrrrrr', user);
     if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
       throw new UnauthorizedException('Email atau password salah');
     }
@@ -75,7 +75,7 @@ export class AuthService {
       const randomString = Math.random().toString(36).substring(2, 8);
       payload = {
         sub: user.id,
-        email: `user_${randomString}@gmail.com`, // Generate random email
+        email: `user_${randomString}@nex.id`, // Generate random email
         name: `User_${randomString}`, // Generate random name
         role: user.role,
       };
@@ -117,6 +117,6 @@ export class AuthService {
       .delete()
       .where('user.id = :userId', { userId })
       .execute();
-    return { message: 'Anda berhasil keluar dari akun' };
+    return { success: true };
   }
 }

@@ -26,7 +26,7 @@ async function bootstrap() {
       'Access-Control-Allow-Origin',
     ],
     exposedHeaders: ['Content-Range', 'X-Content-Range'],
-    credentials: false,
+    credentials: true,
   });
 
   // Add global JWT guard

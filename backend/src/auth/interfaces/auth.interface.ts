@@ -17,7 +17,7 @@ export interface RefreshTokenDto {
 }
 
 export interface LogoutResponse {
-  message: string;
+  success: boolean;
 }
 
 export interface RequestWithUser extends Request {
