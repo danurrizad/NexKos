@@ -6,43 +6,46 @@ import {
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
   Query,
 } from '@nestjs/common';
 import { FacilitiesService } from './facilities.service';
 import { CreateFacilityDto } from './dto/create-facility.dto';
 import { UpdateFacilityDto } from './dto/update-facility.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
+import { PaginatedResponse } from '../common/interfaces/pagination.interface';
+import { Facility } from './entities/facility.entity';
 
 @Controller('facilities')
 export class FacilitiesController {
   constructor(private readonly facilitiesService: FacilitiesService) {}
 
   @Post()
-  create(@Body() createFacilityDto: CreateFacilityDto) {
+  create(@Body() createFacilityDto: CreateFacilityDto): Promise<Facility> {
     return this.facilitiesService.create(createFacilityDto);
   }
 
   @Get()
-  findAll(@Query() paginationQuery: PaginationQueryDto) {
-    return this.facilitiesService.findAll(paginationQuery);
+  findAll(
+    @Query() paginationDto: PaginationQueryDto,
+  ): Promise<PaginatedResponse<Facility>> {
+    return this.facilitiesService.findAll(paginationDto);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.facilitiesService.findOne(id);
+  findOne(@Param('id') id: string): Promise<Facility> {
+    return this.facilitiesService.findOne(+id);
   }
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateFacilityDto: UpdateFacilityDto,
-  ) {
-    return this.facilitiesService.update(id, updateFacilityDto);
+  ): Promise<Facility> {
+    return this.facilitiesService.update(+id, updateFacilityDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.facilitiesService.remove(id);
+  remove(@Param('id') id: string): Promise<void> {
+    return this.facilitiesService.remove(+id);
   }
 }

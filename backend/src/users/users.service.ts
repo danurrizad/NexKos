@@ -6,10 +6,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { PaginationOptions } from '../common/interfaces/pagination.interface';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
+import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 
 @Injectable()
 export class UsersService {
@@ -39,16 +40,14 @@ export class UsersService {
   }
 
   async findAll(
-    options: PaginationOptions = {},
-  ): Promise<{ data: User[]; pagination: any }> {
-    const { page = 1, limit = 10, orderBy = 'id', order = 'ASC' } = options;
-
-    if (page < 1) {
-      throw new BadRequestException('Page number must be greater than 0');
-    }
-    if (limit < 1) {
-      throw new BadRequestException('Limit must be greater than 0');
-    }
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResponse<User>> {
+    const {
+      page = 1,
+      limit = 10,
+      orderBy = 'id',
+      order = 'ASC',
+    } = paginationQuery;
 
     const [data, total] = await this.usersRepository.findAndCount({
       skip: (page - 1) * limit,
@@ -62,11 +61,11 @@ export class UsersService {
 
     return {
       data,
-      pagination: {
+      meta: {
         total,
-        totalPages,
-        currentPage: page,
+        page,
         limit,
+        totalPages,
       },
     };
   }

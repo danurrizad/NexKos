@@ -6,7 +6,7 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { Facility } from 'src/facilities/entities/facility.entity';
 import { PaginationQueryDto } from 'src/common/dto/pagination.query.dto';
-import { PaginatedResponse } from './interfaces/paginated-response.interface';
+import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { BoardingHouse } from 'src/boarding-houses/entities/boarding-house.entity';
 
 @Injectable()
@@ -39,7 +39,9 @@ export class RoomsService {
         id: In(facilityIds),
       });
       if (facilities.length !== facilityIds.length) {
-        throw new NotFoundException('Satu atau lebih fasilitas tidak ditemukan');
+        throw new NotFoundException(
+          'Satu atau lebih fasilitas tidak ditemukan',
+        );
       }
       room.facilities = facilities;
     }
@@ -48,24 +50,28 @@ export class RoomsService {
   }
 
   async findAll(
-    paginationDto: PaginationQueryDto,
+    paginationQuery: PaginationQueryDto,
   ): Promise<PaginatedResponse<Room>> {
-    const { page = 1, limit = 10 } = paginationDto;
-    const skip = (page - 1) * limit;
+    const {
+      page = 1,
+      limit = 10,
+      orderBy = 'createdAt',
+      order = 'DESC',
+    } = paginationQuery;
 
-    const [rooms, total] = await this.roomRepository.findAndCount({
+    const [data, total] = await this.roomRepository.findAndCount({
       relations: ['boardingHouse', 'facilities'],
-      skip,
+      skip: (page - 1) * limit,
       take: limit,
       order: {
-        createdAt: 'DESC',
+        [orderBy]: order,
       },
     });
 
     const totalPages = Math.ceil(total / limit);
 
     return {
-      data: rooms,
+      data,
       meta: {
         total,
         page,
@@ -97,7 +103,9 @@ export class RoomsService {
         id: In(facilityIds),
       });
       if (facilities.length !== facilityIds.length) {
-        throw new NotFoundException('Satu atau lebih fasilitas tidak ditemukan');
+        throw new NotFoundException(
+          'Satu atau lebih fasilitas tidak ditemukan',
+        );
       }
       room.facilities = facilities;
     }

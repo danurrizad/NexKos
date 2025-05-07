@@ -5,6 +5,7 @@ import { Facility } from './entities/facility.entity';
 import { CreateFacilityDto } from './dto/create-facility.dto';
 import { UpdateFacilityDto } from './dto/update-facility.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
+import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 
 @Injectable()
 export class FacilitiesService {
@@ -18,23 +19,29 @@ export class FacilitiesService {
     return this.facilityRepository.save(facility);
   }
 
-  async findAll(paginationQuery: PaginationQueryDto) {
-    const { page = 1, limit = 10 } = paginationQuery;
-    const skip = (page - 1) * limit;
+  async findAll(
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResponse<Facility>> {
+    const {
+      page = 1,
+      limit = 10,
+      orderBy = 'createdAt',
+      order = 'DESC',
+    } = paginationQuery;
 
-    const [facilities, total] = await this.facilityRepository.findAndCount({
-      skip,
+    const [data, total] = await this.facilityRepository.findAndCount({
+      skip: (page - 1) * limit,
       take: limit,
       order: {
-        createdAt: 'DESC',
+        [orderBy]: order,
       },
     });
 
     const totalPages = Math.ceil(total / limit);
 
     return {
-      data: facilities,
-      pagination: {
+      data,
+      meta: {
         total,
         page,
         limit,

@@ -11,10 +11,10 @@ export interface Response<T> {
   success: boolean;
   message: string;
   data?: T;
-  pagination?: {
+  meta?: {
     total: number;
     totalPages: number;
-    currentPage: number;
+    page: number;
     limit: number;
   };
 }
@@ -27,7 +27,7 @@ export class TransformInterceptor<T>
     const request = context.switchToHttp().getRequest();
     const method = request.method;
     const url = request.url;
-    const segments = url.split('/').filter(Boolean); // Get URL segments and remove empty strings
+    const segments = url.split('/').filter(Boolean);
 
     // Check for specific endpoints first
     if (segments.includes('auth')) {
@@ -66,10 +66,7 @@ export class TransformInterceptor<T>
       },
     };
 
-    // Get the appropriate message based on HTTP method
     const methodMessages = messages[method] || messages.GET;
-
-    // Try to get a specific message for the resource, fallback to default
     return methodMessages[segments[0]] || methodMessages.default;
   }
 
@@ -79,18 +76,23 @@ export class TransformInterceptor<T>
   ): Observable<Response<T>> {
     return next.handle().pipe(
       map((data) => {
-        // If data has pagination info
+        // If data has meta info (new pagination format)
         if (
           data &&
           typeof data === 'object' &&
           'data' in data &&
-          'pagination' in data
+          'meta' in data
         ) {
           return {
             success: true,
             message: this.getContextMessage(context),
             data: data.data,
-            pagination: data.pagination,
+            meta: {
+              total: Number(data.meta.total),
+              totalPages: Number(data.meta.totalPages),
+              page: Number(data.meta.page),
+              limit: Number(data.meta.limit),
+            },
           };
         }
 

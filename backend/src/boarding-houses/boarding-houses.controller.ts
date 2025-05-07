@@ -6,18 +6,16 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
   Query,
 } from '@nestjs/common';
 import { BoardingHousesService } from './boarding-houses.service';
 import { CreateBoardingHouseDto } from './dto/create-boarding-house.dto';
 import { UpdateBoardingHouseDto } from './dto/update-boarding-house.dto';
-import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
+import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
+import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { BoardingHouse } from './entities/boarding-house.entity';
-import { PaginationOptions } from '../common/interfaces/pagination.interface';
 
 @Controller('boarding-houses')
-@UseGuards(JwtAuthGuard)
 export class BoardingHousesController {
   constructor(private readonly boardingHousesService: BoardingHousesService) {}
 
@@ -29,8 +27,10 @@ export class BoardingHousesController {
   }
 
   @Get()
-  findAll(@Query() options: PaginationOptions) {
-    return this.boardingHousesService.findAll(options);
+  findAll(
+    @Query() paginationDto: PaginationQueryDto,
+  ): Promise<PaginatedResponse<BoardingHouse>> {
+    return this.boardingHousesService.findAll(paginationDto);
   }
 
   @Get(':id')

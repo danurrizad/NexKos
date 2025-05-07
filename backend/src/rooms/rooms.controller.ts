@@ -11,8 +11,8 @@ import {
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
-import { PaginationQueryDto } from 'src/common/dto/pagination.query.dto';
-import { PaginatedResponse } from './interfaces/paginated-response.interface';
+import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
+import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { Room } from './entities/room.entity';
 
 @Controller('rooms')
