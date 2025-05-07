@@ -1,10 +1,13 @@
 "use client";
 
 import { useSidebar } from "@/context/SidebarContext";
-import AppHeader from "@/layout/AppHeader";
-import AppSidebar from "@/layout/AppSidebar";
-import Backdrop from "@/layout/Backdrop";
-import React from "react";
+
+import React, { Suspense } from "react";
+
+const AppHeader = React.lazy(() => import("@/layout/AppHeader"))
+const AppSidebar = React.lazy(() => import("@/layout/AppSidebar"))
+const Backdrop = React.lazy(() => import("@/layout/Backdrop"))
+import Loading from "@/components/loading/Loading";
 
 export default function AdminLayout({
   children,
@@ -22,6 +25,9 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen xl:flex">
+      <Suspense 
+        fallback={<Loading/>}
+      >
         {/* Sidebar and Backdrop */}
         <AppSidebar />
         <Backdrop />
@@ -34,6 +40,8 @@ export default function AdminLayout({
           {/* Page Content */}
           <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">{children}</div>
         </div>
+      </Suspense>
+      
     </div>
   );
 }

@@ -2,13 +2,17 @@ import type { Metadata } from "next";
 import React from "react";
 
 // edited
-import { Metrics } from "@/components/dashboard/Metrics";
-import MonthlyDeadline from "@/components/dashboard/MonthlyDeadline";
-import MonthlySummary from "@/components/dashboard/MonthlySummary";
+// import { Metrics } from "@/components/dashboard/Metrics";
+// import MonthlyDeadline from "@/components/dashboard/MonthlyDeadline";
+// import MonthlySummary from "@/components/dashboard/MonthlySummary";
+
+const Metrics = React.lazy(()=>import("@/components/dashboard/Metrics"))
+const MonthlyDeadline = React.lazy(()=>import("@/components/dashboard/MonthlyDeadline"))
+const MonthlySummary = React.lazy(()=>import("@/components/dashboard/MonthlySummary"))
 
 export const metadata: Metadata = {
   title:
-    "NexKos | Dashbord",
+    "NexKos | Dashboard",
   description: "Kos Management App",
 };
 

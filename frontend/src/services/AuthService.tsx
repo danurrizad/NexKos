@@ -1,6 +1,8 @@
 'use client'
 import { useAlert } from "@/context/AlertContext";
-import axiosInstance from "@/utils/AxiosInstance";
+import config from "@/utils/config";
+// import axiosInstance from "@/utils/AxiosInstance";
+import axios from "axios";
 
 interface BodyLogin{
     email: string,
@@ -18,6 +20,7 @@ interface ErrorResponse {
 
 const useAuthService = () =>{
     const { showAlert } = useAlert()
+    const API = config.BACKEND_URL
 
     const handleError = (error: unknown) =>{
         const typedError = error as ErrorResponse;
@@ -50,7 +53,7 @@ const useAuthService = () =>{
 
     const login = async(body: BodyLogin) => {
         try {
-            const response = await axiosInstance.post('auth/login', body)
+            const response = await axios.post(`${API}/auth/login`, body)
             return response
         } catch (error: unknown) { 
             handleError(error)

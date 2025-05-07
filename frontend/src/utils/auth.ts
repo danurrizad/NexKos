@@ -1,4 +1,4 @@
-import axios from 'axios';
+'use client'
 import axiosInstance from './AxiosInstance';
 import { jwtDecode } from 'jwt-decode'
 import { useEffect, useState } from 'react';
@@ -21,7 +21,7 @@ export const clearTokens = () => {
 
 export const refreshAccessToken = async () => {
   const { refreshToken } = getTokens();
-  if (!refreshToken) {
+  if (!refreshToken || refreshToken === 'undefined') {
     window.location.href = '/signin';
     throw new Error('No refresh token available');
   }
@@ -46,6 +46,7 @@ export const logout = async () => {
     if (accessToken) {
       const response = await axiosInstance.post(
         `auth/logout`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -65,6 +66,11 @@ export const logout = async () => {
 // Axios interceptor to handle token refresh
 axiosInstance.interceptors.response.use(
   (response) => response,
+  // (config) => {
+  //   const { accessToken } = getTokens()
+  //   config.headers.Authorization = `Bearer ${accessToken}`;
+  //   return config
+  // },
   async (error) => {
     const originalRequest = error.config;
 
@@ -74,7 +80,7 @@ axiosInstance.interceptors.response.use(
       try {
         const newAccessToken = await refreshAccessToken();
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        return axios(originalRequest);
+        return axiosInstance(originalRequest);
       } catch (refreshError) {
         // If refresh fails, redirect to login
         window.location.href = '/signin';

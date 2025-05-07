@@ -40,7 +40,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         showAlert({
           variant: "success",
           title: "Sukses",
-          message: response?.data?.message,
+          message: response?.data?.data?.message,
         })
       }
       router.push("/signin")

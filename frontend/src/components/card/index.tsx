@@ -41,3 +41,4 @@ export const CardBody: React.FC<Card> = ({
     </div>
     );
 };
+

@@ -2,7 +2,7 @@
 import React from "react";
 import { PersonIcon, BedIcon, DoorFrontIcon, DoorOpenIcon } from "@/icons";
 
-export const Metrics = () => {
+export default function Metrics(){
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
       {/* <!-- Metric Item Start --> */}

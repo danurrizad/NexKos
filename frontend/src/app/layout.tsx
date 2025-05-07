@@ -4,7 +4,6 @@ import './globals.css';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { AlertProvider } from '@/context/AlertContext';
-import { Suspense } from 'react';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -21,9 +20,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AlertProvider>
             <SidebarProvider>
-              <Suspense fallback={<div className="bg-red-400 w-screen h-screen flex z-99999">Loading UI...</div>}>
-                {children}
-              </Suspense>
+              {children}
             </SidebarProvider>
           </AlertProvider>
         </ThemeProvider>

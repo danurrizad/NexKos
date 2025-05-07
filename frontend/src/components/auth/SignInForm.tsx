@@ -47,14 +47,14 @@ export default function SignInForm() {
       const response = await login(form)
       console.log("response login: ", response)
       if(response?.status===201){
-        setTokens(response.data.access_token, response.data.refresh_token)
+        setTokens(response.data.data.access_token, response.data.data.refresh_token)
+        router.push("/")
+        showAlert({
+          variant: "success",
+          title: "Sukses",
+          message: "Selamat datang!",
+      })
       }
-      router.push("/")
-      showAlert({
-        variant: "success",
-        title: "Sukses",
-        message: "Selamat datang!",
-    })
     } catch (error) {
       console.error(error)
     } finally{
