@@ -26,9 +26,6 @@ export class BoardingHouse {
   @Column()
   province: string;
 
-  @Column()
-  ownerId: number;
-
   @ManyToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'owner_id' })
   owner: User;

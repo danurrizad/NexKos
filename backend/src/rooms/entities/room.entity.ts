@@ -28,6 +28,9 @@ export class Room {
   })
   status: Status;
 
+  @Column({ nullable: true })
+  floor: number;
+
   @Column({
     type: 'decimal',
     precision: 10,
