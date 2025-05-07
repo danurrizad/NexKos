@@ -31,6 +31,7 @@ import { FacilitiesModule } from './facilities/facilities.module';
         logging: true,
         autoLoadEntities: true,
         synchronize: true,
+        dropSchema: true,
         // migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
         // migrationsRun: true,
         namingStrategy: new SnakeNamingStrategy(),

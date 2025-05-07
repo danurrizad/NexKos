@@ -22,7 +22,7 @@ import { LoginLoggingInterceptor } from './interceptors/login-logging.intercepto
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '15m' }, // Access token expires in 15 minutes
+        signOptions: { expiresIn: '24h' }, // Access token expires in 24 hours for development
       }),
     }),
   ],

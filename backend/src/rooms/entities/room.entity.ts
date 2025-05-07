@@ -34,7 +34,7 @@ export class Room {
   @Column()
   capacity: number;
 
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
   @ManyToOne(() => BoardingHouse, (boardingHouse) => boardingHouse.id)

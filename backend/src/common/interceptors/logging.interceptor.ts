@@ -8,7 +8,15 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { LogEntriesService } from '../../log-entries/log-entries.service';
 import { Request } from 'express';
-import { User } from '../../users/entities/user.entity';
+
+interface JwtPayload {
+  sub: number;
+  email: string;
+  name: string;
+  role: string;
+  iat: number;
+  exp: number;
+}
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -17,12 +25,22 @@ export class LoggingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context
       .switchToHttp()
-      .getRequest<Request & { user?: User }>();
+      .getRequest<Request & { user?: JwtPayload }>();
     const user = request.user;
 
-    // Skip logging for certain paths
+    console.log('LoggingInterceptor - Request path:', request.path);
+    console.log('LoggingInterceptor - User:', user);
+
+    // Skip logging for certain paths and GET requests
     const skipPaths = ['/auth/login', '/auth/refresh', '/auth/logout'];
-    if (skipPaths.includes(request.path)) {
+    if (skipPaths.includes(request.path) || request.method === 'GET') {
+      console.log('LoggingInterceptor - Skipping due to path or method');
+      return next.handle();
+    }
+
+    // Skip logging if no user is available
+    if (!user?.sub) {
+      console.log('LoggingInterceptor - Skipping due to no user');
       return next.handle();
     }
 
@@ -42,6 +60,8 @@ export class LoggingInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(async (response) => {
         try {
+          console.log('LoggingInterceptor - Response:', response);
+
           // Determine the action type
           let action = request.method;
           if (request.method === 'POST') action = 'create';
@@ -50,11 +70,21 @@ export class LoggingInterceptor implements NestInterceptor {
           if (request.method === 'DELETE') action = 'delete';
 
           // Get entity ID from response or request
-          const entityId =
-            response?.id || request.params.id || request.body.id || 0;
+          let entityId = 0;
+          if (response?.data?.id) {
+            entityId = response.data.id;
+          } else if (response?.data?.[0]?.id) {
+            entityId = response.data[0].id;
+          } else if (response?.id) {
+            entityId = response.id;
+          } else {
+            entityId = request.params.id || request.body.id || 0;
+          }
+
+          console.log('LoggingInterceptor - Entity ID:', entityId);
 
           const logEntry = {
-            userId: user?.id || 0,
+            userId: user.sub,
             action,
             entity: request.path.split('/')[1] || 'unknown',
             entityId,
@@ -67,7 +97,9 @@ export class LoggingInterceptor implements NestInterceptor {
             userAgent: request.headers['user-agent'] || 'unknown',
           };
 
+          console.log('LoggingInterceptor - Creating log entry:', logEntry);
           await this.logEntriesService.create(logEntry);
+          console.log('LoggingInterceptor - Log entry created successfully');
         } catch (error) {
           console.error('Error logging request:', error);
         }

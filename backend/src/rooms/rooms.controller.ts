@@ -1,34 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination.query.dto';
+import { PaginatedResponse } from './interfaces/paginated-response.interface';
+import { Room } from './entities/room.entity';
 
 @Controller('rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
   @Post()
-  create(@Body() createRoomDto: CreateRoomDto) {
+  create(@Body() createRoomDto: CreateRoomDto): Promise<Room> {
     return this.roomsService.create(createRoomDto);
   }
 
   @Get()
-  findAll() {
-    return this.roomsService.findAll();
+  findAll(
+    @Query() paginationDto: PaginationQueryDto,
+  ): Promise<PaginatedResponse<Room>> {
+    return this.roomsService.findAll(paginationDto);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Promise<Room> {
     return this.roomsService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateRoomDto: UpdateRoomDto,
+  ): Promise<Room> {
     return this.roomsService.update(+id, updateRoomDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string): Promise<void> {
     return this.roomsService.remove(+id);
   }
 }

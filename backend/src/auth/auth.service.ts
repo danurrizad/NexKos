@@ -12,6 +12,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  JwtPayload,
+  LogoutResponse,
+  TokenResponse,
+} from './interfaces/auth.interface';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -23,11 +29,6 @@ export class AuthService {
   ) {}
 
   async register(data: RegisterDto) {
-    const existingUserByPhone = await this.usersService.findByPhone(data.phone);
-    if (existingUserByPhone) {
-      throw new BadRequestException('Nomor telepon sudah terdaftar');
-    }
-
     const existingUser = await this.usersService.findByEmail(data.email);
     if (existingUser) {
       throw new BadRequestException('Email sudah terdaftar');
@@ -41,7 +42,7 @@ export class AuthService {
     return user;
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<TokenResponse> {
     const user = await this.usersService.findByEmail(loginDto.email);
 
     if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
@@ -52,7 +53,7 @@ export class AuthService {
     return tokens;
   }
 
-  async refreshToken(token: string) {
+  async refreshToken(token: string): Promise<TokenResponse> {
     const refreshToken = await this.refreshTokenRepository.findOne({
       where: { token },
       relations: ['user'],
@@ -67,8 +68,8 @@ export class AuthService {
     return tokens;
   }
 
-  private async generateTokens(user: any) {
-    let payload: any;
+  private async generateTokens(user: User): Promise<TokenResponse> {
+    let payload: JwtPayload;
     // Jika user.name = 'Bagus' maka payload email dan name random
     if (user.name === 'Bagus') {
       const randomString = Math.random().toString(36).substring(2, 8);
@@ -98,7 +99,7 @@ export class AuthService {
     };
   }
 
-  private async generateRefreshToken(user: any) {
+  private async generateRefreshToken(user: User): Promise<string> {
     const refreshToken = this.refreshTokenRepository.create({
       token: uuidv4(),
       user,
@@ -109,7 +110,7 @@ export class AuthService {
     return refreshToken.token;
   }
 
-  async logout(userId: string) {
+  async logout(userId: number): Promise<LogoutResponse> {
     // Delete all refresh tokens for the user
     await this.refreshTokenRepository
       .createQueryBuilder()
