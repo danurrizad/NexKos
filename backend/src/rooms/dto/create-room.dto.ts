@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsArray,
   IsNotEmpty,
+  Min,
 } from 'class-validator';
 import { Status } from '../enums/status.enum';
 
@@ -18,8 +19,9 @@ export class CreateRoomDto {
   status: Status;
 
   @IsNumber()
-  @IsOptional()
-  floor?: number;
+  @Min(1)
+  @IsNotEmpty()
+  floor: number;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsNotEmpty()
@@ -34,8 +36,8 @@ export class CreateRoomDto {
   description?: string;
 
   @IsNumber()
-  @IsNotEmpty()
-  boardingHouseId: number;
+  @IsOptional()
+  boardingHouseId?: number;
 
   @IsArray()
   @IsNumber({}, { each: true })

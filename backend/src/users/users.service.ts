@@ -5,19 +5,23 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
+import { BaseService } from '../common/services/base.service';
 
 @Injectable()
-export class UsersService {
+export class UsersService extends BaseService<User> {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) {}
+    protected dataSource: DataSource,
+  ) {
+    super(usersRepository, dataSource);
+  }
 
   async findByEmail(email: string): Promise<User | null> {
     if (!email) {
@@ -27,16 +31,20 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    // Check if email already exists
-    const existingEmail = await this.findByEmail(createUserDto.email);
-    if (existingEmail) {
-      throw new BadRequestException('Email sudah terdaftar');
-    }
+    return this.executeInTransaction(async (queryRunner) => {
+      const existingUser = await this.findByEmail(createUserDto.email);
+      if (existingUser) {
+        throw new BadRequestException('Email sudah terdaftar');
+      }
 
-    // Create new user
-    const user = this.usersRepository.create(createUserDto);
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      const user = this.usersRepository.create({
+        ...createUserDto,
+        password: hashedPassword,
+      });
 
-    return this.usersRepository.save(user);
+      return queryRunner.manager.save(user);
+    });
   }
 
   async findAll(
@@ -81,29 +89,33 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
+    return this.executeInTransaction(async (queryRunner) => {
+      const user = await this.findOne(id);
 
-    // If email is being updated, check if it already exists
-    if (updateUserDto.email && updateUserDto.email !== user.email) {
-      const existingEmail = await this.findByEmail(updateUserDto.email);
-      if (existingEmail) {
-        throw new BadRequestException('Email sudah terdaftar');
+      if (updateUserDto.email && updateUserDto.email !== user.email) {
+        const existingEmail = await this.findByEmail(updateUserDto.email);
+        if (existingEmail) {
+          throw new BadRequestException('Email sudah terdaftar');
+        }
       }
-    }
 
-    // If password is being updated, hash it
-    if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
-    }
+      if (updateUserDto.password) {
+        updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+      }
 
-    return this.usersRepository.save({
-      ...user,
-      ...updateUserDto,
+      const updatedUser = {
+        ...user,
+        ...updateUserDto,
+      };
+
+      return queryRunner.manager.save(updatedUser);
     });
   }
 
   async remove(id: number): Promise<void> {
-    const user = await this.findOne(id);
-    await this.usersRepository.remove(user);
+    return this.executeInTransaction(async (queryRunner) => {
+      const user = await this.findOne(id);
+      await queryRunner.manager.remove(user);
+    });
   }
 }

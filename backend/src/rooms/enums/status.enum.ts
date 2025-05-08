@@ -1,5 +1,5 @@
 export enum Status {
-  AVAILABLE = 'available',
-  OCCUPIED = 'occupied',
-  INACTIVE = 'inactive',
+  KOSONG = 'kosong',
+  TERISI = 'terisi',
+  NONAKTIF = 'nonaktif',
 }

@@ -30,9 +30,31 @@ export class HttpExceptionFilter implements ExceptionFilter {
           : exceptionResponse.message;
       }
 
+      // Customize error messages based on status code
+      let customMessage = message;
+      switch (status) {
+        case HttpStatus.UNAUTHORIZED:
+          customMessage = 'Sesi Anda telah berakhir. Silakan login kembali.';
+          break;
+        case HttpStatus.FORBIDDEN:
+          customMessage =
+            'Anda tidak memiliki akses untuk melakukan operasi ini.';
+          break;
+        case HttpStatus.NOT_FOUND:
+          customMessage = 'Data yang Anda cari tidak ditemukan.';
+          break;
+        case HttpStatus.BAD_REQUEST:
+          customMessage = 'Data yang Anda kirim tidak valid.';
+          break;
+        case HttpStatus.INTERNAL_SERVER_ERROR:
+          customMessage =
+            'Terjadi kesalahan pada server. Silakan coba lagi nanti.';
+          break;
+      }
+
       return response.status(status).json({
         success: false,
-        message: message,
+        message: customMessage,
         timestamp: new Date().toISOString(),
         path: request.url,
       });

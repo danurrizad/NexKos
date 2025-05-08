@@ -3,7 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { BoardingHouse } from './entities/boarding-house.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateBoardingHouseDto } from './dto/create-boarding-house.dto';
@@ -11,31 +11,37 @@ import { UpdateBoardingHouseDto } from './dto/update-boarding-house.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { UsersService } from '../users/users.service';
+import { BaseService } from '../common/services/base.service';
 
 @Injectable()
-export class BoardingHousesService {
+export class BoardingHousesService extends BaseService<BoardingHouse> {
   constructor(
     @InjectRepository(BoardingHouse)
     private boardingHouseRepository: Repository<BoardingHouse>,
     private usersService: UsersService,
-  ) {}
+    protected dataSource: DataSource,
+  ) {
+    super(boardingHouseRepository, dataSource);
+  }
 
   async create(
     createBoardingHouseDto: CreateBoardingHouseDto,
   ): Promise<BoardingHouse> {
-    // Validate if owner exists
-    try {
-      await this.usersService.findOne(createBoardingHouseDto.ownerId);
-    } catch (error) {
-      throw new BadRequestException(
-        `User dengan ID ${createBoardingHouseDto.ownerId} tidak ditemukan`,
-      );
-    }
+    return this.executeInTransaction(async (queryRunner) => {
+      // Validate if owner exists
+      try {
+        await this.usersService.findOne(createBoardingHouseDto.ownerId);
+      } catch (error) {
+        throw new BadRequestException(
+          `User dengan ID ${createBoardingHouseDto.ownerId} tidak ditemukan`,
+        );
+      }
 
-    const boardingHouse = this.boardingHouseRepository.create(
-      createBoardingHouseDto,
-    );
-    return this.boardingHouseRepository.save(boardingHouse);
+      const boardingHouse = this.boardingHouseRepository.create(
+        createBoardingHouseDto,
+      );
+      return queryRunner.manager.save(boardingHouse);
+    });
   }
 
   async findAll(
@@ -85,27 +91,32 @@ export class BoardingHousesService {
     id: number,
     updateBoardingHouseDto: UpdateBoardingHouseDto,
   ): Promise<BoardingHouse> {
-    const boardingHouse = await this.findOne(id);
+    return this.executeInTransaction(async (queryRunner) => {
+      const boardingHouse = await this.findOne(id);
 
-    // Validate if owner exists if ownerId is provided in update
-    if (updateBoardingHouseDto.ownerId) {
-      try {
-        await this.usersService.findOne(updateBoardingHouseDto.ownerId);
-      } catch (error) {
-        throw new BadRequestException(
-          `User dengan ID ${updateBoardingHouseDto.ownerId} tidak ditemukan`,
-        );
+      if (updateBoardingHouseDto.ownerId) {
+        try {
+          await this.usersService.findOne(updateBoardingHouseDto.ownerId);
+        } catch (error) {
+          throw new BadRequestException(
+            `User dengan ID ${updateBoardingHouseDto.ownerId} tidak ditemukan`,
+          );
+        }
       }
-    }
 
-    return this.boardingHouseRepository.save({
-      ...boardingHouse,
-      ...updateBoardingHouseDto,
+      const updatedBoardingHouse = {
+        ...boardingHouse,
+        ...updateBoardingHouseDto,
+      };
+
+      return queryRunner.manager.save(updatedBoardingHouse);
     });
   }
 
   async remove(id: number): Promise<void> {
-    const boardingHouse = await this.findOne(id);
-    await this.boardingHouseRepository.remove(boardingHouse);
+    return this.executeInTransaction(async (queryRunner) => {
+      const boardingHouse = await this.findOne(id);
+      await queryRunner.manager.remove(boardingHouse);
+    });
   }
 }

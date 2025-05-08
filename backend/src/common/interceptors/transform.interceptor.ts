@@ -44,9 +44,9 @@ export class TransformInterceptor<T>
 
     const messages = {
       GET: {
-        default: 'Data berhasil diambil',
-        list: 'Data berhasil diambil',
-        detail: 'Data berhasil diambil',
+        default: 'Data berhasil dimuat',
+        list: 'Data berhasil dimuat',
+        detail: 'Data berhasil dimuat',
       },
       POST: {
         default: 'Data berhasil dibuat',

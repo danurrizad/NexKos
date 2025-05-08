@@ -1,22 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Facility } from './entities/facility.entity';
 import { CreateFacilityDto } from './dto/create-facility.dto';
 import { UpdateFacilityDto } from './dto/update-facility.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
+import { BaseService } from '../common/services/base.service';
 
 @Injectable()
-export class FacilitiesService {
+export class FacilitiesService extends BaseService<Facility> {
   constructor(
     @InjectRepository(Facility)
     private readonly facilityRepository: Repository<Facility>,
-  ) {}
+    protected dataSource: DataSource,
+  ) {
+    super(facilityRepository, dataSource);
+  }
 
   async create(createFacilityDto: CreateFacilityDto): Promise<Facility> {
-    const facility = this.facilityRepository.create(createFacilityDto);
-    return this.facilityRepository.save(facility);
+    return this.executeInTransaction(async (queryRunner) => {
+      const facility = this.facilityRepository.create(createFacilityDto);
+      return queryRunner.manager.save(facility);
+    });
   }
 
   async findAll(
@@ -66,13 +72,17 @@ export class FacilitiesService {
     id: number,
     updateFacilityDto: UpdateFacilityDto,
   ): Promise<Facility> {
-    const facility = await this.findOne(id);
-    Object.assign(facility, updateFacilityDto);
-    return this.facilityRepository.save(facility);
+    return this.executeInTransaction(async (queryRunner) => {
+      const facility = await this.findOne(id);
+      Object.assign(facility, updateFacilityDto);
+      return queryRunner.manager.save(facility);
+    });
   }
 
   async remove(id: number): Promise<void> {
-    const facility = await this.findOne(id);
-    await this.facilityRepository.remove(facility);
+    return this.executeInTransaction(async (queryRunner) => {
+      const facility = await this.findOne(id);
+      await queryRunner.manager.remove(facility);
+    });
   }
 }
