@@ -31,6 +31,11 @@ export class FacilitiesController {
     return this.facilitiesService.findAll(paginationDto);
   }
 
+  @Get('selection')
+  findAllForSelection(): Promise<Pick<Facility, 'id' | 'name'>[]> {
+    return this.facilitiesService.findAllForSelection();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Facility> {
     return this.facilitiesService.findOne(+id);

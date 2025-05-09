@@ -85,4 +85,13 @@ export class FacilitiesService extends BaseService<Facility> {
       await queryRunner.manager.remove(facility);
     });
   }
+
+  async findAllForSelection(): Promise<Pick<Facility, 'id' | 'name'>[]> {
+    return this.facilityRepository.find({
+      select: ['id', 'name'],
+      order: {
+        name: 'ASC',
+      },
+    });
+  }
 }
