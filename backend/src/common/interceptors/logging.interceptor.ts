@@ -53,7 +53,8 @@ export class LoggingInterceptor implements NestInterceptor {
     ) {
       const id = request.params.id || request.body.id;
       if (id) {
-        oldData = JSON.stringify({ id });
+        // Store the complete request body as oldData
+        oldData = JSON.stringify(request.body);
       }
     }
 

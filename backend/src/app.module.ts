@@ -13,6 +13,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { BoardingHousesModule } from './boarding-houses/boarding-houses.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { FacilitiesModule } from './facilities/facilities.module';
+import { OccupantsModule } from './occupants/occupants.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { FacilitiesModule } from './facilities/facilities.module';
     BoardingHousesModule,
     RoomsModule,
     FacilitiesModule,
+    OccupantsModule,
   ],
   controllers: [AppController],
   providers: [
