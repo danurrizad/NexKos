@@ -69,6 +69,39 @@ import ErrorCircleIcon from "./error.svg"
 import OpenNewIcon from "./open-new.svg"
 import CurrencyExchangeIcon from "./currency-exchange.svg"
 import DevicesIcon from "./devices.svg"
+import ChevronRightIcon from "./chevron-right.svg"
+import DresserIcon from "./dresser.svg"
+import BadgeIcon from "./badge.svg"
+import CctvIcon from "./cctv.svg"
+import ChairIcon from "./chair.svg"
+import CheckroomIcon from "./checkroom.svg"
+import ClimateIcon from "./climate.svg"
+import CookingIcon from "./cooking.svg"
+import CurtainIcon from "./curtain.svg"
+import DeskIcon from "./desk.svg"
+import DishwasherIcon from "./dishwasher.svg"
+import DoorSlideIcon from "./door-sliding.svg"
+import DoubleBedIcon from "./double-bed.svg"
+import ElectricityIcon from "./electricity.svg"
+import FanIcon from "./fan.svg"
+import GuardianIcon from "./guardian.svg"
+import KeyIcon from "./key.svg"
+import KitchenIcon from "./kitchen.svg"
+import LaundryIcon from "./laundry.svg"
+import ManIcon from "./man.svg"
+import MosqueIcon from "./mosque.svg"
+import ParkingIcon from "./parking.svg"
+import PrayerIcon from "./prayer.svg"
+import ShowerIcon from "./shower.svg"
+import SingleBedIcon from "./single-bed.svg"
+import SmokeIcon from "./smoke.svg"
+import SmokingRoomIcon from "./smoking-room.svg"
+import TvIcon from "./tv.svg"
+import WaterIcon from "./water.svg"
+import WaterHeaterIcon from "./water-heater.svg"
+import WcIcon from "./wc.svg"
+import WifiIcon from "./wifi.svg"
+import WomanIcon from "./woman.svg"
 
 export {
   DownloadIcon,
@@ -141,5 +174,38 @@ export {
   ErrorCircleIcon,
   OpenNewIcon,
   CurrencyExchangeIcon,
-  DevicesIcon
+  DevicesIcon,
+  ChevronRightIcon,
+  DresserIcon,
+  BadgeIcon,
+  CctvIcon,
+  ChairIcon,
+  CheckroomIcon,
+  ClimateIcon,
+  CookingIcon,
+  CurtainIcon,
+  DeskIcon,
+  DishwasherIcon,
+  DoorSlideIcon,
+  DoubleBedIcon,
+  ElectricityIcon,
+  FanIcon,
+  GuardianIcon,
+  KeyIcon,
+  KitchenIcon,
+  LaundryIcon,
+  ManIcon,
+  MosqueIcon,
+  ParkingIcon,
+  PrayerIcon,
+  ShowerIcon,
+  SingleBedIcon,
+  SmokeIcon,
+  SmokingRoomIcon,
+  TvIcon,
+  WaterIcon,
+  WaterHeaterIcon,
+  WcIcon,
+  WifiIcon,
+  WomanIcon
 };
