@@ -81,8 +81,8 @@ export class FacilitiesService extends BaseService<Facility> {
 
   async remove(id: number): Promise<void> {
     return this.executeInTransaction(async (queryRunner) => {
-      const facility = await this.findOne(id);
-      await queryRunner.manager.remove(facility);
+      await this.findOne(id);
+      await queryRunner.manager.delete(Facility, id);
     });
   }
 

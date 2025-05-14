@@ -28,7 +28,9 @@ export class Facility {
   })
   icon: Icon;
 
-  @ManyToMany(() => Room, (room) => room.id)
+  @ManyToMany(() => Room, (room) => room.id, {
+    onDelete: 'CASCADE',
+  })
   rooms: Room[];
 
   @CreateDateColumn()
