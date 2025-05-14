@@ -66,7 +66,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
           <UserIcon className="text-gray-500"/>
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">{ decodedUser?.name === "Bagus" ? "Bagus GANAZ ABIZ" : decodedUser?.name}</span>
+        <span className="block mr-1 font-medium text-theme-sm">{ decodedUser?.email.includes("danur") ? decodedUser.name : "Bagus GANAZ ABIZ"}</span>
 
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
