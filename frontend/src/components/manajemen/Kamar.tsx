@@ -13,7 +13,6 @@ import{
   TableBody
 } from '@/components/ui/table'
 import Button from "@/components/ui/button/Button";
-import { dataKamar } from '@/services/TableDummy'
 import { AppRegistrationIcon, DeleteIcon } from "@/icons";
 import Badge from "@/components/ui/badge/Badge";
 import { Modal } from "@/components/ui/modal";
@@ -21,78 +20,261 @@ import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Select from "@/components/form/Select";
 import useRoomService from "@/services/RoomService";
+import { useAlert } from "@/context/AlertContext";
+import Spinner from "../ui/spinner/Spinner";
+import Pagination from "../tables/Pagination";
+import LoadingTable from "../tables/LoadingTable";
+import LimitPerPage from "../tables/LimitPerPage";
+import useFacilityService from "@/services/FacilityService";
+import MultiSelect from "../form/MultiSelect";
+import IconDisplay from "../ui/icon/IconDisplay";
 
 interface FormInterface{
-  roomNumber: string,
-  floor: number | null,
-  capacity: number | null,
-  price: number | null,
+  roomNumber: number | null,
   status: string
+  price: number | null,
+  capacity: number | null,
+  floor: number | null,
+  description: string,
+  facilityIds: number[] | []
+}
+
+interface ResponseRoom{
+  id: number,
+  roomNumber: number,
+  status: string
+  price: number,
+  capacity: number,
+  floor: number,
+  description: string,
+  facilityIds: number[] | []
+}
+
+interface ResponseFacility{
+  id: number,
+  name: string
+}
+
+interface PaginationPops{
+  currentPage: number,
+  limitPerPage: number,
+  totalPage: number
+}
+
+interface FormErrors{
+  roomNumber: string,
+  floor: string,
+  capacity: string,
+  price: string,
+  status: string,
 }
 
 export default function Kamar() {
   const [loading, setLoading] = useState({
     fetch: false,
-    add: false,
-    update: false
+    submit: false
   })
-  // const { getAllRooms, createRoom, updateRoomById, deleteRoomById } = useRoomService()
-  const { getAllRooms } = useRoomService()
-  const [roomsData, setRoomsData] = useState<FormInterface | []>([])
-  const [limitPerPage, setLimitPerPage] = useState<number>(10)
-  const [page, setPage] = useState<number>(1)
+  const { showAlert } = useAlert()
+  const { getAllRooms, createRoom, updateRoomById, deleteRoomById } = useRoomService()
+  const { getSelectionFacilities } = useFacilityService()
+  const [roomsData, setRoomsData] = useState<[]>([])
+  const [optionsFacility, setOptionsFacility] = useState([])
+  const [pagination, setPagination] = useState<PaginationPops>({
+    currentPage: 1,
+    limitPerPage: 10,
+    totalPage: 1
+  })
   const [showModal, setShowModal] = useState({
     type: "",
     add: false,
     update: false,
+    delete: false
+  })
+  const [roomId, setRoomId] = useState<number>(0)
+  const [form, setForm] = useState<FormInterface>({
+    roomNumber: null,
+    status: "",
+    price: null,
+    capacity: null,
+    floor: null,
+    description: "",
+    facilityIds: []
+  }) 
+  const [formErrors, setFormErrors] = useState<FormErrors>({
+    roomNumber: "",
+    floor: "",
+    capacity: "",
+    price: "",
+    status: ""
   })
 
-  const [form, setForm] = useState<FormInterface>({
-    roomNumber: "",
-    floor: null,
-    capacity: null,
-    price: null,
-    status: ""
-  }) 
-
-  const fetchRooms = async() => {
+  const fetchFacilities = async() => {
     try {
-      setLoading({ ...loading, fetch: true})
-      const response = await getAllRooms(page, limitPerPage)
-      setRoomsData(response?.data.data)
-      console.log("response room get: ", response)
+      const response = await getSelectionFacilities()
+      console.log("response fasilitas: ", response)
+      const options = response?.data?.data.map((data: ResponseFacility)=>{
+        return{
+          value: data.id,
+          text: data.name,
+          selected: false
+        }
+      })
+      setOptionsFacility(options)
     } catch (error) {
       console.error(error)
-    } finally{
-      setLoading({ ...loading, fetch: false})
     }
   }
 
+  const fetchRooms = async() => {
+    try {
+      const response = await getAllRooms(pagination.currentPage, pagination.limitPerPage)
+      console.log("response kamar: ", response)
+      setRoomsData(response?.data.data)
+      setPagination({
+        currentPage: response?.data.meta.page,
+        limitPerPage: response?.data.meta.limit,
+        totalPage: response?.data.meta.totalPages,
+      })
+      // console.log("response room get: ", response)
+    } catch (error) {
+      console.error(error)
+    } 
+  }
+
   useEffect(()=>{
-    fetchRooms()
+    const fetchFirstLoad = async() =>{
+      try {
+        setLoading({ ...loading, fetch: true })
+        await fetchRooms()
+        await fetchFacilities()
+      } catch (error) {
+        console.error("Error first load: ", error)
+      } finally{
+        setLoading({...loading, fetch: false })
+      }
+    }
+
+    fetchFirstLoad()
   }, [])
 
-  const handleOpenModal = (type: string) => {
+  useEffect(()=>{
+    fetchRooms()
+    console.log(pagination)
+  }, [pagination.currentPage, pagination.limitPerPage])
+
+  const handleOpenModal = (type: string, data: ResponseRoom | ResponseRoom) => {
+    if(type==='update'){
+      setRoomId(data.id)
+      setForm({
+        roomNumber: data.roomNumber,
+        status: data.status,
+        price: Number(data.price),
+        capacity: data.capacity,
+        floor: data.floor,
+        description: data.description, 
+        facilityIds: data.facilityIds
+      }) //clicked form
+    }else if(type==='add'){
+      setForm({
+        roomNumber: null,
+        status: "kosong",
+        price: null,
+        capacity: null,
+        floor: null,
+        description: "", 
+        facilityIds: []
+      }) //empty form
+    }else if(type==='delete'){
+      setForm({
+        ...form,
+        roomNumber: data.roomNumber
+      })
+      setRoomId(data.id)
+    }
     setShowModal({ ...showModal, type: type, [type]: true})
   }
 
   const handleCloseModal = (type: string) => {
     setShowModal({ ...showModal, type: "", [type]: false})
+    setFormErrors({
+      roomNumber: "",
+      floor: "",
+      capacity: "",
+      price: "",
+      status: ""
+    })
   }
 
   const handleSubmit = async() => {
     try {
-      console.log("body to submit", form)
+      setLoading({ ...loading, submit: true})
+      // Form validation
+      const errors: FormErrors = {
+        roomNumber: "",
+        floor: "",
+        capacity: "",
+        price: "",
+        status: "",
+      };
+      if (!form.roomNumber) errors.roomNumber = "Nomor kamar wajib diisi.";
+      if (!form.floor) errors.floor = "Lantai wajib diisi.";
+      if (!form.capacity) errors.capacity = "Kapasitas wajib diisi.";
+      if (!form.price) errors.price = "Harga wajib diisi.";
+      if (!form.status) errors.status = "Status wajib diisi.";
+
+      // Check if any error message exists
+      const hasErrors = Object.values(errors).some((msg) => msg !== "");
+
+      if (hasErrors) {
+        setFormErrors(errors);
+        return;
+      }
+
+      // API process
+      const response = showModal.type === "add" ? await createRoom(form) : await updateRoomById(Number(roomId), form)
+      handleCloseModal(showModal.type)
+      showAlert({
+        variant: "success",
+        title: "Sukses!",
+        message: response?.data?.message,
+      })
+      fetchRooms()
     } catch (error) {
       console.error(error)
+    } finally{
+      setLoading({ ...loading, submit: false})
     }
   }
 
+  const optionsStatus = [
+    { label: "Kosong", value: "kosong" },
+    { label: "Terisi", value: "terisi" },
+    { label: "Nonaktif", value: "nonaktif" },
+  ]
+
+  const handleDelete = async() => {
+    try {
+      setLoading({...loading, submit: true})
+      const response = await deleteRoomById(roomId)
+      handleCloseModal(showModal.type)
+      showAlert({
+        variant: "success",
+        title: "Sukses!",
+        message: response?.data?.message,
+      })
+      fetchRooms()
+    } catch (error) {
+      console.error(error)
+    } finally{
+      setLoading({...loading, submit: false})
+    }
+  }
+  
   const renderModal = (type: string) => {
     if(type==='add' || type==='update'){
       return(
         <Modal
-          isOpen={showModal.add}
+          isOpen={showModal.add || showModal.update}
           onClose={()=>handleCloseModal(type)}
         >
           <Card>
@@ -104,38 +286,125 @@ export default function Kamar() {
                 <div className="mb-4">
                   <Label>Nomor Kamar <span className="text-red-500">*</span></Label>
                   <Input
-                    defaultValue={form.roomNumber}
-                    onChange={(e)=>setForm({...form, roomNumber: e.target.value})}
+                    defaultValue={form.roomNumber?.toString()}
+                    onChange={(e)=>{
+                      setFormErrors({...formErrors, roomNumber: ""})
+                      setForm({...form, roomNumber: Number(e.target.value)})
+                    }}
                   />
+                  { formErrors?.roomNumber && <Label className="text-red-500 font-light">{formErrors.roomNumber}</Label>}
                 </div>
                 <div className="mb-4">
                   <Label>Letak (lantai)<span className="text-red-500">*</span></Label>
-                  <Select 
-                    placeholder="Pilih lantai"
-                    options={[{label: "1", value: "1"}, {label: "2", value: "2"}]} 
-                    onChange={(e)=>setForm({...form, floor: Number(e)})}
+                  <Input 
+                    onChange={(e)=>{
+                      setFormErrors({...formErrors, floor: ""})
+                      setForm({...form, floor: Number(e.target.value)})
+                    }}
+                    defaultValue={form.floor?.toString()}
                   />
+                  { formErrors?.floor && <Label className="text-red-500 font-light">{formErrors.floor}</Label>}
                 </div>
                 <div className="mb-4">
                   <Label>Kapasitas<span className="text-red-500">*</span></Label>
                   <Input
                     defaultValue={form.capacity?.toString()}
-                    onChange={(e)=>setForm({ ...form, capacity: Number(e.target.value)})}
+                    onChange={(e)=>{
+                      setFormErrors({...formErrors, capacity: ""})
+                      setForm({ ...form, capacity: Number(e.target.value)})
+                    }}
                   />
+                  { formErrors?.capacity && <Label className="text-red-500 font-light">{formErrors.capacity}</Label>}
                 </div>
                 <div className="mb-4">
                   <Label>Harga<span className="text-red-500">*</span></Label>
                   <Input
                     defaultValue={form.price?.toString()}
-                    onChange={(e)=>setForm({ ...form, price: Number(e.target.value)})}
+                    onChange={(e)=>{
+                      setFormErrors({...formErrors, price: ""})
+                      setForm({ ...form, price: Number(e.target.value)})
+                    }}
+                  />
+                  { formErrors?.price && <Label className="text-red-500 font-light">{formErrors.price}</Label>}
+                </div>
+                <div className="mb-4">
+                  <Label>Deskripsi</Label>
+                  <Input
+                    defaultValue={form.description?.toString()}
+                    onChange={(e)=>{
+                      setForm({ ...form, description: e.target.value})
+                    }}
                   />
                 </div>
+                <div className="mb-4">
+                  <Label>Fasilitas</Label>
+                  <MultiSelect
+                    label=""
+                    options={optionsFacility}
+                    defaultSelected={form?.facilityIds?.map(String)}
+                    onChange={(selectedString)=>{
+                      setForm({ ...form, facilityIds: selectedString.map(Number)})
+                    }}
+                  />
+                </div>
+                { type==="update" && (
+                  <div className="mb-4">
+                    <Label>Status</Label>
+                    <Select 
+                      placeholder="Pilih status"
+                      options={optionsStatus} 
+                      onChange={(e)=>{
+                        setFormErrors({...formErrors, status: ""})
+                        setForm({...form, status: e})
+                      }}
+                      defaultValue={optionsStatus.find((opt)=>opt.value === form.status?.toString())?.value}
+                    />
+                    { formErrors?.status && <Label className="text-red-500 font-light">{formErrors.status}</Label>}
+                  </div> )}
               </form>
             </CardBody>
             <CardBody>
               <div className="flex justify-end gap-4">
                 <Button type="button" onClick={()=>handleCloseModal(type)} className="border-1 py-2 px-5 bg-gray-400 text-white hover:bg-gray-600">Kembali</Button>
-                <Button type="button" onClick={handleSubmit} className="border-1 py-2 px-5 bg-green-500 text-white hover:bg-green-700">Tambah</Button>
+                <Button 
+                  type="button" 
+                  disabled={loading.submit} 
+                  onClick={handleSubmit} 
+                  className="border-1 py-2 px-5 bg-green-500 text-white hover:bg-green-700"
+                >
+                    { loading.submit && <Spinner/> }
+                    {type==='add' ? "Tambah" : "Simpan"}
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
+        </Modal>
+      )
+    } else if(type==='delete'){
+      return(
+        <Modal
+          isOpen={showModal.delete}
+          onClose={()=>handleCloseModal(type)}
+          parentClass="px-100"
+        >
+          <Card className="">
+            <CardHeader>
+              <div>
+                Apakah yakin ingin menghapus Kamar No. {form.roomNumber}?
+              </div>
+            </CardHeader>
+            <CardBody>
+              <div  className="flex justify-end items-center gap-4">
+                <Button type="button" onClick={()=>handleCloseModal(type)} className="border-1 py-2 px-5 bg-gray-400 text-white hover:bg-gray-600">Kembali</Button>
+                <Button 
+                  type="button" 
+                  disabled={loading.submit} 
+                  onClick={handleDelete} 
+                  className="border-1 py-2 px-5 bg-green-500 text-white hover:bg-green-700"
+                >
+                    { loading.submit && <Spinner/> }
+                    Hapus
+                </Button>
               </div>
             </CardBody>
           </Card>
@@ -143,17 +412,20 @@ export default function Kamar() {
       )
     }
   }
+
+ 
   return (
     <div className="">
       { renderModal(showModal.type) }
 
       <Card className="overflow-x-auto">
         <CardHeader>
-          <Button onClick={()=>handleOpenModal('add')} className="bg-white border-gray-400 border-1 border-solid ">
+          <Button onClick={()=>handleOpenModal('add', form as ResponseRoom)} className="bg-white border-gray-400 border-1 border-solid ">
             + Tambah Kamar
           </Button>
         </CardHeader>
-        <CardBody>
+        {/* <CardBody className="min-h-[calc(100vh-200px)]"> */}
+        <CardBody className="">
           <Table>
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
@@ -178,15 +450,27 @@ export default function Kamar() {
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  Status
+                  Harga
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  Harga
+                  Deskripsi
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Fasilitas
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                >
+                  Status
                 </TableCell>
                 <TableCell
                   isHeader
@@ -197,36 +481,59 @@ export default function Kamar() {
               </TableRow>
             </TableHeader>
             <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
-              { dataKamar.map((data, index)=>{
+              { loading.fetch && (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-10">
+                    <LoadingTable/>
+                  </TableCell>
+                </TableRow>
+              )}
+
+              { (roomsData.length === 0 && !loading.fetch) && (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-10">
+                    Data kamar tidak ditemukan
+                  </TableCell>
+                </TableRow>
+              )}
+              { (roomsData.length !== 0 && !loading.fetch) && roomsData?.map((data: ResponseRoom, index: number)=>{
                 return(
                   <TableRow key={index}>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.roomNumber}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.floorUnit}</TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.floor}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.capacity}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm flex justify-center items-center h-full">
-                      <Badge color={ data.status==='nonaktif' ? 'dark' : data.status==='terisi' ? 'success' : data.status==='kosong' ? 'info' : 'light'}>
-                        {data.status.toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    {/* <TableCell className="px-5 py-4 sm:px-6 flex justify-center dark:text-white text-theme-sm">
-                      <div 
-                        className={`
-                          text-center w-fit px-4
-                          rounded-sm ${data.status==="nonaktif" ? "bg-gray-300" : data.status==="terisi" ? "bg-green-300" : data.status==="kosong" ? "bg-blue-300" : ""}`}
-                        >
-                        {data.status.toUpperCase()}
-                      </div>
-                    </TableCell> */}
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
-                      {data.price.toLocaleString('id-ID',{
+                      {Number(data.price)?.toLocaleString('id-ID',{
                         style: 'currency',
                         currency: 'IDR'
                       })}
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                      {data.description}
+                    </TableCell>
+                    <TableCell className="px-5 sm:px-6 text-center dark:text-white text-theme-sm ">
+                      <div className="flex gap-4 items-center flex-wrap">
+                        { data?.facilities?.map((data, index)=>{
+                          return(
+                            <div key={index} className="flex bg-gray-200 rounded-[200px] px-2 py-1 gap-2">
+                              <IconDisplay iconName={data.icon}/>
+                              {data.name}
+                            </div>
+                          )
+                        })}
+
+                      </div>
+
+                    </TableCell>
+                    <TableCell className="px-5 sm:px-6 text-center dark:text-white text-theme-sm ">
+                      <Badge color={ data.status==='nonaktif' ? 'dark' : data.status==='terisi' ? 'success' : data.status==='kosong' ? 'info' : 'light'}>
+                        {data.status.toUpperCase()}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
                       <div className="flex justify-center gap-4">
-                        <Button className="bg-blue-500"><AppRegistrationIcon/></Button>
-                        <Button className="bg-red-500"><DeleteIcon/></Button>
+                        <Button className="bg-blue-500" onClick={()=>handleOpenModal('update', data)}><AppRegistrationIcon/></Button>
+                        <Button className="bg-red-500" onClick={()=>handleOpenModal('delete', data)}><DeleteIcon/></Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -234,6 +541,22 @@ export default function Kamar() {
               })}
             </TableBody>
           </Table>
+          <div className="flex justify-center gap-5">
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPage}
+              onPageChange={(e)=>{
+                setPagination({...pagination, currentPage: e})
+              }}
+            />
+            <LimitPerPage
+              onChangeLimit={(e)=>{
+                setPagination({ ...pagination, limitPerPage: e, currentPage: 1})
+              }}
+              limit={pagination.limitPerPage}
+              options={[10, 25, 50]}
+            />
+          </div>
         </CardBody>
       </Card>
     </div>

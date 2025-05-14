@@ -2,14 +2,15 @@
 import { useAlert } from "@/context/AlertContext";
 import { getTokens } from "@/utils/auth";
 import axiosInstance from "@/utils/AxiosInstance";
-import axios from "axios";
 
 interface BodyForm{
-    roomNumber: string,
-    floor: number,
-    capacity: number,
-    price: number,
-    status: string
+    roomNumber: number | null,
+    status: string,
+    price: number | null,
+    capacity: number | null,
+    floor: number | null,
+    description: string,
+    facilityIds: number[]
 }
 
 interface ErrorResponse {
@@ -56,8 +57,8 @@ const useRoomService = () =>{
 
     const getAllRooms = async(page: string | number, limit: string | number) => {
         try {
-            // const response = await axios.get(`https://21f3-202-169-38-254.ngrok-free.app/rooms?page=${page}&limit=${limit}`, {
             const response = await axiosInstance.get(`rooms?page=${page}&limit=${limit}`, {
+                // const response = await axios.get(`${config.BACKEND_URL}/rooms?page=${page}&limit=${limit}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -70,25 +71,38 @@ const useRoomService = () =>{
 
     const createRoom = async(body: BodyForm) => {
         try {
-            const response = await axiosInstance.post('api/room', body)
+            const response = await axiosInstance.post('rooms', body, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+            console.log("CREATED IN SERVICE")
             return response
         } catch (error: unknown) { 
             handleError(error)
         }
     }
 
-    const updateRoomById = async(id: string, body: BodyForm) => {
+    const updateRoomById = async(id: number, body: BodyForm) => {
         try {
-            const response = await axiosInstance.put(`api/room/${id}`, body)
+            const response = await axiosInstance.patch(`rooms/${id}`, body, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
             return response
         } catch (error) {
             handleError(error)
         }
     }
 
-    const deleteRoomById = async(id: string) => {
+    const deleteRoomById = async(id: number) => {
         try {
-            const response = await axiosInstance.delete(`api/room/${id}`)
+            const response = await axiosInstance.delete(`rooms/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
             return response
         } catch (error) {
             handleError(error)
