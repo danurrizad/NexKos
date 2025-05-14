@@ -24,9 +24,14 @@ export class Room {
   @Column({
     type: 'enum',
     enum: Status,
-    default: Status.AVAILABLE,
+    default: Status.KOSONG,
   })
   status: Status;
+
+  @Column({
+    default: 1,
+  })
+  floor: number;
 
   @Column({
     type: 'decimal',

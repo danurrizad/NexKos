@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsOptional,
   IsArray,
+  Min,
 } from 'class-validator';
 import { Status } from '../enums/status.enum';
 
@@ -17,6 +18,11 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {
   @IsEnum(Status)
   @IsOptional()
   status?: Status;
+
+  @IsNumber()
+  @Min(1)
+  @IsOptional()
+  floor?: number;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsOptional()

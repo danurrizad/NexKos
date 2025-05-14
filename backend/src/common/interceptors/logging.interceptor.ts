@@ -53,7 +53,8 @@ export class LoggingInterceptor implements NestInterceptor {
     ) {
       const id = request.params.id || request.body.id;
       if (id) {
-        oldData = JSON.stringify({ id });
+        // Store the complete request body as oldData
+        oldData = JSON.stringify(request.body);
       }
     }
 
@@ -88,11 +89,14 @@ export class LoggingInterceptor implements NestInterceptor {
             action,
             entity: request.path.split('/')[1] || 'unknown',
             entityId,
-            oldData,
-            newData: JSON.stringify({
-              requestBody: request.body || {},
-              response: response || {},
-            }),
+            oldData: oldData || '',
+            newData:
+              action === 'delete'
+                ? ''
+                : JSON.stringify({
+                    requestBody: request.body || {},
+                    response: response || {},
+                  }),
             ipAddress: request.ip || request.socket.remoteAddress || 'unknown',
             userAgent: request.headers['user-agent'] || 'unknown',
           };

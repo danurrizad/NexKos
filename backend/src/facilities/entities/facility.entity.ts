@@ -7,6 +7,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Room } from '../../rooms/entities/room.entity';
+import { Icon } from '../enum/icon.enum';
+
 @Entity('facilities')
 export class Facility {
   @PrimaryGeneratedColumn()
@@ -15,11 +17,16 @@ export class Facility {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
-  @Column()
-  icon: string;
+  @Column({
+    type: 'enum',
+    enum: Icon,
+    enumName: 'icon_enum',
+    nullable: true,
+  })
+  icon: Icon;
 
   @ManyToMany(() => Room, (room) => room.id)
   rooms: Room[];

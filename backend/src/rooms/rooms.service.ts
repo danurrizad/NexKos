@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Room } from './entities/room.entity';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
@@ -8,9 +8,10 @@ import { Facility } from 'src/facilities/entities/facility.entity';
 import { PaginationQueryDto } from 'src/common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { BoardingHouse } from 'src/boarding-houses/entities/boarding-house.entity';
+import { BaseService } from '../common/services/base.service';
 
 @Injectable()
-export class RoomsService {
+export class RoomsService extends BaseService<Room> {
   constructor(
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
@@ -18,35 +19,41 @@ export class RoomsService {
     private readonly facilityRepository: Repository<Facility>,
     @InjectRepository(BoardingHouse)
     private readonly boardingHouseRepository: Repository<BoardingHouse>,
-  ) {}
+    protected dataSource: DataSource,
+  ) {
+    super(roomRepository, dataSource);
+  }
 
   async create(createRoomDto: CreateRoomDto): Promise<Room> {
-    const { facilityIds, boardingHouseId, ...roomData } = createRoomDto;
-    const boardingHouse = await this.boardingHouseRepository.findOne({
-      where: { id: boardingHouseId },
-    });
-    if (!boardingHouse) {
-      throw new NotFoundException(
-        `Rumah Kos dengan ID ${boardingHouseId} tidak ditemukan`,
-      );
-    }
+    return this.executeInTransaction(async (queryRunner) => {
+      const { facilityIds, boardingHouseId, ...roomData } = createRoomDto;
 
-    const room = this.roomRepository.create(roomData);
-    room.boardingHouse = boardingHouse;
-
-    if (facilityIds) {
-      const facilities = await this.facilityRepository.findBy({
-        id: In(facilityIds),
+      const boardingHouse = await this.boardingHouseRepository.findOne({
+        where: { id: boardingHouseId },
       });
-      if (facilities.length !== facilityIds.length) {
+      if (!boardingHouse) {
         throw new NotFoundException(
-          'Satu atau lebih fasilitas tidak ditemukan',
+          `Rumah Kos dengan ID ${boardingHouseId} tidak ditemukan`,
         );
       }
-      room.facilities = facilities;
-    }
 
-    return this.roomRepository.save(room);
+      const room = this.roomRepository.create(roomData);
+      room.boardingHouse = boardingHouse;
+
+      if (facilityIds) {
+        const facilities = await this.facilityRepository.findBy({
+          id: In(facilityIds),
+        });
+        if (facilities.length !== facilityIds.length) {
+          throw new NotFoundException(
+            'Satu atau lebih fasilitas tidak ditemukan',
+          );
+        }
+        room.facilities = facilities;
+      }
+
+      return queryRunner.manager.save(room);
+    });
   }
 
   async findAll(
@@ -55,8 +62,8 @@ export class RoomsService {
     const {
       page = 1,
       limit = 10,
-      orderBy = 'createdAt',
-      order = 'DESC',
+      orderBy = 'roomNumber',
+      order = 'ASC',
     } = paginationQuery;
 
     const [data, total] = await this.roomRepository.findAndCount({
@@ -95,27 +102,31 @@ export class RoomsService {
   }
 
   async update(id: number, updateRoomDto: UpdateRoomDto): Promise<Room> {
-    const room = await this.findOne(id);
-    const { facilityIds, ...roomData } = updateRoomDto;
+    return this.executeInTransaction(async (queryRunner) => {
+      const room = await this.findOne(id);
+      const { facilityIds, ...roomData } = updateRoomDto;
 
-    if (facilityIds) {
-      const facilities = await this.facilityRepository.findBy({
-        id: In(facilityIds),
-      });
-      if (facilities.length !== facilityIds.length) {
-        throw new NotFoundException(
-          'Satu atau lebih fasilitas tidak ditemukan',
-        );
+      if (facilityIds) {
+        const facilities = await this.facilityRepository.findBy({
+          id: In(facilityIds),
+        });
+        if (facilities.length !== facilityIds.length) {
+          throw new NotFoundException(
+            'Satu atau lebih fasilitas tidak ditemukan',
+          );
+        }
+        room.facilities = facilities;
       }
-      room.facilities = facilities;
-    }
 
-    Object.assign(room, roomData);
-    return this.roomRepository.save(room);
+      Object.assign(room, roomData);
+      return queryRunner.manager.save(room);
+    });
   }
 
   async remove(id: number): Promise<void> {
-    const room = await this.findOne(id);
-    await this.roomRepository.remove(room);
+    return this.executeInTransaction(async (queryRunner) => {
+      const room = await this.findOne(id);
+      await queryRunner.manager.remove(room);
+    });
   }
 }
