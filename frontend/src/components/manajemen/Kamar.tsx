@@ -1,4 +1,5 @@
 'use client'
+
 import React, { useEffect, useState } from "react";
 import{
   Card,
@@ -47,12 +48,14 @@ interface ResponseRoom{
   capacity: number,
   floor: number,
   description: string,
-  facilityIds: number[] | []
+  facilityIds: number[] | [],
+  facilities: ResponseFacility[]
 }
 
 interface ResponseFacility{
   id: number,
-  name: string
+  name: string,
+  icon: string
 }
 
 interface PaginationPops{
@@ -155,11 +158,13 @@ export default function Kamar() {
     }
 
     fetchFirstLoad()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(()=>{
     fetchRooms()
     console.log(pagination)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.currentPage, pagination.limitPerPage])
 
   const handleOpenModal = (type: string, data: ResponseRoom | ResponseRoom) => {
@@ -513,12 +518,13 @@ export default function Kamar() {
                     </TableCell>
                     <TableCell className="px-5 sm:px-6 text-center dark:text-white text-theme-sm ">
                       <div className="flex gap-4 items-center flex-wrap">
-                        { data?.facilities?.map((data, index)=>{
+                        { data?.facilities?.map((data: ResponseFacility, index: number)=>{
                           return(
-                            <div key={index} className="flex bg-gray-200 rounded-[200px] px-2 py-1 gap-2">
-                              <IconDisplay iconName={data.icon}/>
-                              {data.name}
-                            </div>
+                            // <div key={index} className="flex bg-gray-200 rounded-[200px] px-2 py-0 gap-2">
+                              <Badge key={index} startIcon={ <IconDisplay iconName={data.icon} className="text-blue-700 " />}>
+                                {data.name}
+                              </Badge>
+                            // </div>
                           )
                         })}
 

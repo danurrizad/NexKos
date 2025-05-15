@@ -9,10 +9,6 @@ export const metadata: Metadata = {
   description: "Kos Management App",
 };
 
-export default function ManajemenTagihan() {
-  return (
-    <div className="">
-      <Tagihan/>
-    </div>
-  );
+export default function Page() {
+  return <Tagihan/>
 }

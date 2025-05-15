@@ -9,9 +9,12 @@ export const setTokens = (accessToken: string, refreshToken: string) => {
 };
 
 export const getTokens = () => {
-  const accessToken = localStorage.getItem('access_token');
-  const refreshToken = localStorage.getItem('refresh_token');
-  return { accessToken, refreshToken };
+  if (typeof window !== 'undefined') {
+    const accessToken = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
+    return { accessToken, refreshToken };
+  }
+  return { accessToken: null, refreshToken: null };
 };
 
 export const clearTokens = () => {
