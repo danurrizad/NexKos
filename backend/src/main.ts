@@ -15,6 +15,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'https://g5xqwfz1-3000.asse.devtunnels.ms',
+      'https://nex-kos.vercel.app',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [

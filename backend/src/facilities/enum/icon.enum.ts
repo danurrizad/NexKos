@@ -30,4 +30,6 @@ export enum Icon {
   WC = 'wc',
   WIFI = 'wifi',
   WOMAN = 'woman',
+  CAR = 'car',
+  BIKE = 'bike',
 }
