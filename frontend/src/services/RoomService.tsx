@@ -69,6 +69,20 @@ const useRoomService = () =>{
         }
     }
 
+    const getSelectionRooms = async() => {
+        try {
+            const response = await axiosInstance.get(`rooms/selection`, {
+                // const response = await axios.get(`${config.BACKEND_URL}/rooms?page=${page}&limit=${limit}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+            return response
+        } catch (error) {
+            handleError(error)
+        }
+    }
+
     const createRoom = async(body: BodyForm) => {
         try {
             const response = await axiosInstance.post('rooms', body, {
@@ -111,6 +125,7 @@ const useRoomService = () =>{
 
     return{
         getAllRooms,
+        getSelectionRooms,
         createRoom,
         updateRoomById,
         deleteRoomById
