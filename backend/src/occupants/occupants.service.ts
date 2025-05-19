@@ -7,7 +7,6 @@ import { UpdateOccupantDto } from './dto/update-occupant.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { BaseService } from '../common/services/base.service';
-import { User } from '../users/entities/user.entity';
 import { Room } from '../rooms/entities/room.entity';
 
 @Injectable()
@@ -15,8 +14,6 @@ export class OccupantsService extends BaseService<Occupant> {
   constructor(
     @InjectRepository(Occupant)
     private readonly occupantRepository: Repository<Occupant>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
     protected dataSource: DataSource,
