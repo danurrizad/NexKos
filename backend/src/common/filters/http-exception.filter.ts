@@ -14,12 +14,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    // Handle NestJS HttpException
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
 
-      // Handle array of messages
       let message = exceptionResponse;
       if (
         typeof exceptionResponse === 'object' &&
@@ -30,11 +28,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
           : exceptionResponse.message;
       }
 
-      // Customize error messages based on status code
+      // Customize error messages based on status code and path
       let customMessage = message;
       switch (status) {
         case HttpStatus.UNAUTHORIZED:
-          customMessage = 'Sesi Anda telah berakhir. Silakan login kembali.';
+          // Jika ini adalah endpoint login, gunakan pesan asli
+          if (request.path === '/auth/login') {
+            customMessage = message;
+          } else {
+            customMessage = 'Sesi Anda telah berakhir. Silakan login kembali.';
+          }
           break;
         case HttpStatus.FORBIDDEN:
           customMessage =
@@ -60,7 +63,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       });
     }
 
-    // Handle other errors (non-HttpException)
+    // Handle other errors
     return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Terjadi kesalahan pada server',

@@ -38,6 +38,10 @@ export class UpdateOccupantDto {
   endDate?: Date;
 
   @IsOptional()
+  @IsString()
+  note?: string;
+
+  @IsOptional()
   @IsNumber()
   userId?: number;
 

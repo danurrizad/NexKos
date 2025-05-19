@@ -7,11 +7,13 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Status } from '../enums/status.enum';
 import { Facility } from 'src/facilities/entities/facility.entity';
+import { Occupant } from 'src/occupants/entities/occupant.entity';
 
 @Entity('rooms')
 export class Room {
@@ -53,6 +55,9 @@ export class Room {
   @ManyToMany(() => Facility, (facility) => facility.id)
   @JoinTable({ name: 'room_facilities' })
   facilities: Facility[];
+
+  @OneToMany(() => Occupant, (occupant) => occupant.room)
+  occupants: Occupant[];
 
   @CreateDateColumn()
   createdAt: Date;
