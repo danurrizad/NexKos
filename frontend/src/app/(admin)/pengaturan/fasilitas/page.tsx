@@ -1,18 +1,16 @@
+import LoadingImport from "@/components/loading/LoadingImport";
 import { Metadata } from "next";
-import React from "react";
-
-const Fasilitas = React.lazy(()=>import("@/components/pengaturan/Fasilitas"))
+import dynamic from "next/dynamic";
 
 export const metadata: Metadata = {
-    title:
-      "NexKos | Pengaturan Fasilitas",
+    title: "NexKos | Pengaturan Fasilitas",
     description: "Kos Management App",
   };
 
-export default function PengaturanFasilitas(){
-    return(
-        <div>
-            <Fasilitas/>
-        </div>
-    )
+const Fasilitas = dynamic(() => import("@/components/pengaturan/Fasilitas"), {
+  loading: () => <LoadingImport/>,
+});
+
+export default function Page(){
+    return <Fasilitas/>
 }

@@ -6,6 +6,7 @@ import {
   KitchenIcon, LaundryIcon, ManIcon, MosqueIcon, ParkingIcon,
   PrayerIcon, ShowerIcon, SingleBedIcon, SmokeIcon, SmokingRoomIcon,
   TvIcon, WaterIcon, WaterHeaterIcon, WcIcon, WifiIcon, WomanIcon,
+  BikeIcon, CarIcon
 } from "@/icons";
 
 type IconItem = {
@@ -40,7 +41,6 @@ const iconList: IconItem[] = [
   { render: <KeyIcon />, value: "key" },
   { render: <KitchenIcon />, value: "kitchen" },
   { render: <LaundryIcon />, value: "laundry" },
-  { render: <ManIcon />, value: "man" },
   { render: <MosqueIcon />, value: "mosque" },
   { render: <ParkingIcon />, value: "parking" },
   { render: <PrayerIcon />, value: "prayer" },
@@ -51,9 +51,12 @@ const iconList: IconItem[] = [
   { render: <TvIcon />, value: "tv" },
   { render: <WaterIcon />, value: "water" },
   { render: <WaterHeaterIcon />, value: "water-heater" },
-  { render: <WcIcon />, value: "wc" },
   { render: <WifiIcon />, value: "wifi" },
+  { render: <WcIcon />, value: "wc" },
+  { render: <ManIcon />, value: "man" },
   { render: <WomanIcon />, value: "woman" },
+  { render: <BikeIcon />, value: "bike" },
+  { render: <CarIcon />, value: "car" },
 ];
 
 const SelectIcon: React.FC<SelectIconProps> = ({

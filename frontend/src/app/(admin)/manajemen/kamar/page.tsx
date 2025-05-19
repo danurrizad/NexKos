@@ -1,19 +1,16 @@
-import type { Metadata } from "next";
-import React from "react";
-
-import Kamar from "../../../../components/manajemen/Kamar";
-// const Kamar = React.lazy(()=>import("@/components/manajemen/Kamar"))
+import LoadingImport from "@/components/loading/LoadingImport";
+import { Metadata } from "next";
+import dynamic from "next/dynamic";
 
 export const metadata: Metadata = {
-  title:
-    "NexKos | Manajemen Kamar",
+  title: "NexKos | Manajemen Kamar",
   description: "Kos Management App",
 };
 
-export default function ManajemenKamar() {
-  return (
-    <div className="">
-      <Kamar/>
-    </div>
-  );
+const Kamar = dynamic(() => import("@/components/manajemen/Kamar"), {
+  loading: () => <LoadingImport/>,
+});
+
+export default function Page() {
+  return <Kamar />
 }

@@ -5,6 +5,7 @@ import {
     KitchenIcon, LaundryIcon, ManIcon, MosqueIcon, ParkingIcon,
     PrayerIcon, ShowerIcon, SingleBedIcon, SmokeIcon, SmokingRoomIcon,
     TvIcon, WaterIcon, WaterHeaterIcon, WcIcon, WifiIcon, WomanIcon,
+    BikeIcon, CarIcon
   } from "@/icons";
 import { JSX } from "react";
 
@@ -14,11 +15,13 @@ import { JSX } from "react";
   };
 
   interface IconDisplayProps{
-    iconName: string
+    iconName: string,
+    className?: string
   }
   
 const IconDisplay: React.FC<IconDisplayProps> = ({
-    iconName
+    iconName,
+    className
 }) => {
     const iconList: IconItem[] = [
         { render: <BadgeIcon />, value: "badge" },
@@ -52,12 +55,14 @@ const IconDisplay: React.FC<IconDisplayProps> = ({
         { render: <WcIcon />, value: "wc" },
         { render: <WifiIcon />, value: "wifi" },
         { render: <WomanIcon />, value: "woman" },
+        { render: <BikeIcon />, value: "bike" },
+        { render: <CarIcon />, value: "car" },
       ];
 
     return(
-        <>
+        <div className={`${className}`}>
             { iconList.find((data)=>data.value === iconName)?.render }
-        </>
+        </div>
     )
 }
 

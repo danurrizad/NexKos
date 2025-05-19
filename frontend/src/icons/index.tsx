@@ -102,6 +102,8 @@ import WaterHeaterIcon from "./water-heater.svg"
 import WcIcon from "./wc.svg"
 import WifiIcon from "./wifi.svg"
 import WomanIcon from "./woman.svg"
+import BikeIcon from "./bike.svg"
+import CarIcon from "./car.svg"
 
 export {
   DownloadIcon,
@@ -207,5 +209,7 @@ export {
   WaterHeaterIcon,
   WcIcon,
   WifiIcon,
-  WomanIcon
+  WomanIcon,
+  BikeIcon,
+  CarIcon
 };

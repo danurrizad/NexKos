@@ -84,7 +84,7 @@ export default function Fasilitas(){
         const fetchFirstLoad = async() => {
             try {
                 setLoading({...loading, fetch: true})
-                fetchFacilities()
+                await fetchFacilities()
             } catch (error) {
                 console.error(error)
             } finally{
@@ -93,6 +93,7 @@ export default function Fasilitas(){
         }
 
         fetchFirstLoad()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
 
@@ -181,8 +182,8 @@ export default function Fasilitas(){
         if(type==='add' || type==='update'){
           return(
             <Modal
+              parentClass="px-10"
               isOpen={showModal.add || showModal.update}
-            //   isOpen={true}
               onClose={()=>handleCloseModal(type)}
             >
               <Card>
@@ -245,7 +246,7 @@ export default function Fasilitas(){
             <Modal
               isOpen={showModal.delete}
               onClose={()=>handleCloseModal(type)}
-              parentClass="px-100"
+              parentClass="px-10"
             >
               <Card className="">
                 <CardHeader>
@@ -281,78 +282,80 @@ export default function Fasilitas(){
                     <Button className="border border-gray-400" onClick={()=>handleOpenModal("add", form as ResponseFacility)}>+ Tambah fasilitas</Button>
                 </CardHeader>
                 <CardBody className="">
-                    <Table>
-                        {/* Table Header */}
-                        <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-                        <TableRow>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                            >
-                                No
-                            </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                            >
-                                Nama
-                            </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                            >
-                                Deskripsi
-                            </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                            >
-                                Icon
-                            </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
-                            >
-                                Action
-                            </TableCell>
-                        </TableRow>
-                        </TableHeader>
-                        <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
-                        { loading.fetch && (
-                            <TableRow>
-                            <TableCell colSpan={5} className="py-10">
-                                <LoadingTable/>
-                            </TableCell>
-                            </TableRow>
-                        )}
+                    <div className="overflow-x-auto">
+                      <Table className="">
+                          {/* Table Header */}
+                          <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                          <TableRow>
+                              <TableCell
+                                  isHeader
+                                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                              >
+                                  No
+                              </TableCell>
+                              <TableCell
+                                  isHeader
+                                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                              >
+                                  Nama
+                              </TableCell>
+                              <TableCell
+                                  isHeader
+                                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                              >
+                                  Deskripsi
+                              </TableCell>
+                              <TableCell
+                                  isHeader
+                                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                              >
+                                  Icon
+                              </TableCell>
+                              <TableCell
+                                  isHeader
+                                  className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                              >
+                                  Action
+                              </TableCell>
+                          </TableRow>
+                          </TableHeader>
+                          <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
+                            { loading.fetch && (
+                                <TableRow>
+                                <TableCell colSpan={5} className="py-10">
+                                    <LoadingTable/>
+                                </TableCell>
+                                </TableRow>
+                            )}
 
-                        { (facilitiesData.length === 0 && !loading.fetch) && (
-                            <TableRow>
-                            <TableCell colSpan={5} className="text-center py-10">
-                                Data fasilitas tidak ditemukan
-                            </TableCell>
-                            </TableRow>
-                        )}
-                        { (facilitiesData.length !== 0 && !loading.fetch) && facilitiesData?.map((data: ResponseFacility, index: number)=>{
-                            return(
-                            <TableRow key={index}>
-                                <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{index+1}</TableCell>
-                                <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.name}</TableCell>
-                                <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.description}</TableCell>
-                                <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
-                                    <IconDisplay iconName={data.icon}/>
+                            { (facilitiesData.length === 0 && !loading.fetch) && (
+                                <TableRow>
+                                <TableCell colSpan={5} className="text-center py-10">
+                                    Data fasilitas tidak ditemukan
                                 </TableCell>
-                                <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
-                                <div className="flex justify-center gap-4">
-                                    <Button className="bg-blue-500" onClick={()=>handleOpenModal('update', data)}><AppRegistrationIcon/></Button>
-                                    <Button className="bg-red-500" onClick={()=>handleOpenModal('delete', data)}><DeleteIcon/></Button>
-                                </div>
-                                </TableCell>
-                            </TableRow>
-                            )
-                        })}
-                        </TableBody>
-                    </Table>
+                                </TableRow>
+                            )}
+                            { (facilitiesData.length !== 0 && !loading.fetch) && facilitiesData?.map((data: ResponseFacility, index: number)=>{
+                                return(
+                                <TableRow key={index}>
+                                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{index+1}</TableCell>
+                                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.name}</TableCell>
+                                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.description}</TableCell>
+                                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                                        <IconDisplay iconName={data.icon}/>
+                                    </TableCell>
+                                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                                    <div className="flex justify-center gap-4">
+                                        <Button className="bg-blue-500" onClick={()=>handleOpenModal('update', data)}><AppRegistrationIcon/></Button>
+                                        <Button className="bg-red-500" onClick={()=>handleOpenModal('delete', data)}><DeleteIcon/></Button>
+                                    </div>
+                                    </TableCell>
+                                </TableRow>
+                                )
+                            })}
+                          </TableBody>
+                      </Table>
+                    </div>
                     <div className="flex justify-center gap-5">
                         <Pagination
                             currentPage={pagination.currentPage}

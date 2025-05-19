@@ -1,7 +1,11 @@
+import LoadingImport from "@/components/loading/LoadingImport";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import React from "react";
 
-import Penghuni from "../../../../components/manajemen/Penghuni";
+const Penghuni = dynamic(()=>import('@/components/manajemen/Penghuni'), {
+  loading: () => <LoadingImport/>
+})
 
 export const metadata: Metadata = {
   title:
@@ -9,10 +13,6 @@ export const metadata: Metadata = {
   description: "Kos Management App",
 };
 
-export default function ManajemenPenghuni() {
-  return (
-    <div className="">
-      <Penghuni/>
-    </div>
-  );
+export default function Page() {
+  return <Penghuni/>
 }
