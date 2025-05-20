@@ -37,12 +37,7 @@ export class UsersService extends BaseService<User> {
         throw new BadRequestException('Email sudah terdaftar');
       }
 
-      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-      const user = this.usersRepository.create({
-        ...createUserDto,
-        password: hashedPassword,
-      });
-
+      const user = this.usersRepository.create(createUserDto);
       return queryRunner.manager.save(user);
     });
   }

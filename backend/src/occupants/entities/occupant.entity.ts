@@ -40,6 +40,9 @@ export class Occupant {
   @Column({ nullable: true })
   endDate: Date;
 
+  @Column({ nullable: true })
+  note: string;
+
   @ManyToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'user_id' })
   user: User;

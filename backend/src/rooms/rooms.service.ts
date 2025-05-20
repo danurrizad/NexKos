@@ -129,4 +129,15 @@ export class RoomsService extends BaseService<Room> {
       await queryRunner.manager.remove(room);
     });
   }
+
+  async findAllForSelection(): Promise<
+    Pick<Room, 'id' | 'roomNumber' | 'floor'>[]
+  > {
+    return this.roomRepository.find({
+      select: ['id', 'roomNumber', 'floor'],
+      order: {
+        roomNumber: 'ASC',
+      },
+    });
+  }
 }
