@@ -46,9 +46,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
         case HttpStatus.NOT_FOUND:
           customMessage = 'Data yang Anda cari tidak ditemukan.';
           break;
-        case HttpStatus.BAD_REQUEST:
-          customMessage = 'Data yang Anda kirim tidak valid.';
-          break;
+        // case HttpStatus.BAD_REQUEST:
+        //   customMessage = 'Data yang Anda kirim tidak valid.';
+        //   break;
         case HttpStatus.INTERNAL_SERVER_ERROR:
           customMessage =
             'Terjadi kesalahan pada server. Silakan coba lagi nanti.';

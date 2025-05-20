@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Not } from 'typeorm';
 import { Occupant } from './entities/occupant.entity';
 import { CreateOccupantDto } from './dto/create-occupant.dto';
 import { UpdateOccupantDto } from './dto/update-occupant.dto';
@@ -28,6 +28,7 @@ export class OccupantsService extends BaseService<Occupant> {
   async create(createOccupantDto: CreateOccupantDto): Promise<Occupant> {
     return this.executeInTransaction(async (queryRunner) => {
       const { roomId, ...occupantData } = createOccupantDto;
+      console.log('occupantData', occupantData);
 
       // Validasi NIK unik
       const existingNik = await this.occupantRepository.findOne({
@@ -49,13 +50,14 @@ export class OccupantsService extends BaseService<Occupant> {
       }
 
       // Validasi kapasitas kamar
-      if (room.occupants.length >= room.capacity) {
+      const activeOccupants = room.occupants.filter((occ) => !occ.endDate);
+      if (activeOccupants.length >= room.capacity) {
         throw new BadRequestException('Kamar sudah penuh');
       }
 
       // Validasi penghuni utama
       if (occupantData.isPrimary) {
-        const hasPrimary = room.occupants.some((occ) => occ.isPrimary);
+        const hasPrimary = activeOccupants.some((occ) => occ.isPrimary);
         if (hasPrimary) {
           throw new BadRequestException('Kamar sudah memiliki penghuni utama');
         }
@@ -139,7 +141,7 @@ export class OccupantsService extends BaseService<Occupant> {
       // Validasi NIK unik jika NIK diubah
       if (occupantData.nik && occupantData.nik !== occupant.nik) {
         const existingNik = await this.occupantRepository.findOne({
-          where: { nik: occupantData.nik },
+          where: { nik: occupantData.nik, id: Not(occupant.id) },
         });
         if (existingNik) {
           throw new BadRequestException('NIK sudah terdaftar');
@@ -159,30 +161,41 @@ export class OccupantsService extends BaseService<Occupant> {
         }
 
         // Validasi kapasitas kamar (kecuali jika hanya pindah kamar)
-        if (
-          room.id !== occupant.room.id &&
-          room.occupants.length >= room.capacity
-        ) {
-          throw new BadRequestException('Kamar sudah penuh');
-        }
+        if (room.id !== occupant.room.id) {
+          const activeOccupants = room.occupants.filter((occ) => !occ.endDate);
+          if (activeOccupants.length >= room.capacity) {
+            throw new BadRequestException('Kamar sudah penuh');
+          }
 
-        // Validasi penghuni utama jika diubah
-        if (occupantData.isPrimary && !occupant.isPrimary) {
-          const hasPrimary = room.occupants.some((occ) => occ.isPrimary);
-          if (hasPrimary) {
-            throw new BadRequestException(
-              'Kamar sudah memiliki penghuni utama',
-            );
+          // Validasi penghuni utama jika diubah
+          if (occupantData.isPrimary && !occupant.isPrimary) {
+            const hasPrimary = activeOccupants.some((occ) => occ.isPrimary);
+            if (hasPrimary) {
+              throw new BadRequestException(
+                'Kamar sudah memiliki penghuni utama',
+              );
+            }
           }
         }
 
         occupant.room = room;
       }
 
-      // Validasi tanggal
-      if (occupantData.startDate) {
+      const occupantStartDateSplit = occupant.startDate
+        .toISOString()
+        .split('T')[0];
+      const occupantBodyStartDateSplit = occupantData.startDate
+        ? new Date(occupantData.startDate).toISOString().split('T')[0]
+        : null;
+
+      // Validasi tanggal hanya jika diubah
+      if (
+        occupantData.startDate &&
+        occupantBodyStartDateSplit !== occupantStartDateSplit
+      ) {
         const startDate = new Date(occupantData.startDate);
         const today = new Date();
+
         today.setHours(0, 0, 0, 0);
 
         if (startDate < today) {

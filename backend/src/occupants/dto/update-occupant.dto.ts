@@ -7,6 +7,7 @@ import {
   IsString,
 } from 'class-validator';
 import { Gender } from '../enums/gender.enum';
+import { Type } from 'class-transformer';
 
 export class UpdateOccupantDto {
   @IsOptional()
@@ -31,10 +32,12 @@ export class UpdateOccupantDto {
 
   @IsOptional()
   @IsDate()
+  @Type(() => Date)
   startDate?: Date;
 
   @IsOptional()
   @IsDate()
+  @Type(() => Date)
   endDate?: Date;
 
   @IsOptional()

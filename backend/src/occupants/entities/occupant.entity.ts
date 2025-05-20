@@ -16,7 +16,7 @@ export class Occupant {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column({ type: 'bigint', unique: true })
   nik: number;
 
   @Column()
@@ -34,10 +34,10 @@ export class Occupant {
   @Column()
   isPrimary: boolean;
 
-  @Column()
+  @Column({ type: 'date' })
   startDate: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'date', nullable: true })
   endDate: Date;
 
   @Column({ nullable: true })
