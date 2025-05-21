@@ -31,8 +31,8 @@ export class FacilitiesService extends BaseService<Facility> {
     const {
       page = 1,
       limit = 10,
-      orderBy = 'createdAt',
-      order = 'DESC',
+      orderBy = 'id',
+      order = 'ASC',
     } = paginationQuery;
 
     const [data, total] = await this.facilityRepository.findAndCount({

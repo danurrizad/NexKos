@@ -1,6 +1,7 @@
 import {
   IsBoolean,
   IsDate,
+  IsEmail,
   IsEnum,
   IsNumber,
   IsOptional,
@@ -45,8 +46,9 @@ export class UpdateOccupantDto {
   note?: string;
 
   @IsOptional()
-  @IsNumber()
-  userId?: number;
+  @IsEmail()
+  @IsString()
+  emailPayer?: string;
 
   @IsOptional()
   @IsNumber()

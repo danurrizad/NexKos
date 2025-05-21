@@ -1,4 +1,4 @@
-export enum Icon {
+export enum FacilityIcon {
   BADGE = 'badge',
   CCTV = 'cctv',
   CHAIR = 'chair',

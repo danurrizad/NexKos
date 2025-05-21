@@ -12,7 +12,7 @@ import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { BaseService } from '../common/services/base.service';
 import { Room } from '../rooms/entities/room.entity';
-
+import { User } from '../users/entities/user.entity';
 @Injectable()
 export class OccupantsService extends BaseService<Occupant> {
   constructor(
@@ -28,7 +28,6 @@ export class OccupantsService extends BaseService<Occupant> {
   async create(createOccupantDto: CreateOccupantDto): Promise<Occupant> {
     return this.executeInTransaction(async (queryRunner) => {
       const { roomId, ...occupantData } = createOccupantDto;
-      console.log('occupantData', occupantData);
 
       // Validasi NIK unik
       const existingNik = await this.occupantRepository.findOne({
@@ -81,6 +80,18 @@ export class OccupantsService extends BaseService<Occupant> {
       const occupant = this.occupantRepository.create(occupantData);
       occupant.room = room;
 
+      if (occupantData.emailPayer) {
+        const user = await queryRunner.manager.findOne(User, {
+          where: { email: occupantData.emailPayer },
+        });
+        if (!user) {
+          throw new NotFoundException(
+            `User dengan email ${occupantData.emailPayer} tidak ditemukan`,
+          );
+        }
+        occupant.user = user;
+      }
+
       return queryRunner.manager.save(occupant);
     });
   }
@@ -91,12 +102,18 @@ export class OccupantsService extends BaseService<Occupant> {
     const {
       page = 1,
       limit = 10,
-      orderBy = 'name',
+      orderBy = 'id',
       order = 'ASC',
     } = paginationQuery;
 
     const [data, total] = await this.occupantRepository.findAndCount({
       relations: ['user', 'room'],
+      select: {
+        user: {
+          id: true,
+          email: true,
+        },
+      },
       skip: (page - 1) * limit,
       take: limit,
       order: {
@@ -136,7 +153,7 @@ export class OccupantsService extends BaseService<Occupant> {
   ): Promise<Occupant> {
     return this.executeInTransaction(async (queryRunner) => {
       const occupant = await this.findOne(id);
-      const { roomId, ...occupantData } = updateOccupantDto;
+      const { roomId, emailPayer, ...occupantData } = updateOccupantDto;
 
       // Validasi NIK unik jika NIK diubah
       if (occupantData.nik && occupantData.nik !== occupant.nik) {
@@ -146,6 +163,19 @@ export class OccupantsService extends BaseService<Occupant> {
         if (existingNik) {
           throw new BadRequestException('NIK sudah terdaftar');
         }
+      }
+
+      // Update user if emailPayer is provided
+      if (emailPayer) {
+        const user = await queryRunner.manager.findOne(User, {
+          where: { email: emailPayer },
+        });
+        if (!user) {
+          throw new NotFoundException(
+            `User dengan email ${emailPayer} tidak ditemukan`,
+          );
+        }
+        occupant.user = user;
       }
 
       // Validasi kamar jika diubah
