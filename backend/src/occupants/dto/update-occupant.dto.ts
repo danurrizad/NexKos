@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  ValidateIf,
 } from 'class-validator';
 import { Gender } from '../enums/gender.enum';
 import { Type } from 'class-transformer';
@@ -45,7 +46,7 @@ export class UpdateOccupantDto {
   @IsString()
   note?: string;
 
-  @IsOptional()
+  @ValidateIf((o) => o.emailPayer !== undefined && o.emailPayer !== '')
   @IsEmail()
   @IsString()
   emailPayer?: string;

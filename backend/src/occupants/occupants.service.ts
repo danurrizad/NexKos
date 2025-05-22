@@ -25,19 +25,49 @@ export class OccupantsService extends BaseService<Occupant> {
     super(occupantRepository, dataSource);
   }
 
-  async create(createOccupantDto: CreateOccupantDto): Promise<Occupant> {
-    return this.executeInTransaction(async (queryRunner) => {
-      const { roomId, ...occupantData } = createOccupantDto;
-
-      // Validasi NIK unik
+  private async validateNik(
+    nik: number,
+    currentOccupantId: number,
+  ): Promise<void> {
+    try {
       const existingNik = await this.occupantRepository.findOne({
-        where: { nik: occupantData.nik },
+        where: { nik, id: Not(currentOccupantId) },
       });
       if (existingNik) {
         throw new BadRequestException('NIK sudah terdaftar');
       }
+    } catch (error) {
+      console.error('Error in NIK validation:', error);
+      throw error;
+    }
+  }
 
-      // Validasi kamar
+  private async validateAndGetUser(
+    email: string,
+    queryRunner: any,
+  ): Promise<User> {
+    try {
+      const user = await queryRunner.manager.findOne(User, {
+        where: { email },
+      });
+      if (!user) {
+        throw new NotFoundException(
+          `User dengan email ${email} tidak ditemukan`,
+        );
+      }
+      return user;
+    } catch (error) {
+      console.error('Error in user validation:', error);
+      throw error;
+    }
+  }
+
+  private async validateAndGetRoom(
+    roomId: number,
+    occupant: Occupant,
+    isPrimary?: boolean,
+  ): Promise<Room> {
+    try {
       const room = await this.roomRepository.findOne({
         where: { id: roomId },
         relations: ['occupants'],
@@ -48,22 +78,33 @@ export class OccupantsService extends BaseService<Occupant> {
         );
       }
 
-      // Validasi kapasitas kamar
-      const activeOccupants = room.occupants.filter((occ) => !occ.endDate);
-      if (activeOccupants.length >= room.capacity) {
-        throw new BadRequestException('Kamar sudah penuh');
-      }
+      // Validasi kapasitas kamar (kecuali jika hanya pindah kamar)
+      if (room.id !== occupant.room.id) {
+        const activeOccupants = room.occupants.filter((occ) => !occ.endDate);
+        if (activeOccupants.length >= room.capacity) {
+          throw new BadRequestException('Kamar sudah penuh');
+        }
 
-      // Validasi penghuni utama
-      if (occupantData.isPrimary) {
-        const hasPrimary = activeOccupants.some((occ) => occ.isPrimary);
-        if (hasPrimary) {
-          throw new BadRequestException('Kamar sudah memiliki penghuni utama');
+        // Validasi penghuni utama jika diubah
+        if (isPrimary !== undefined && isPrimary && !occupant.isPrimary) {
+          const hasPrimary = activeOccupants.some((occ) => occ.isPrimary);
+          if (hasPrimary) {
+            throw new BadRequestException(
+              'Kamar sudah memiliki penghuni utama',
+            );
+          }
         }
       }
 
-      // Validasi tanggal
-      const startDate = new Date(occupantData.startDate);
+      return room;
+    } catch (error) {
+      console.error('Error in room validation:', error);
+      throw error;
+    }
+  }
+
+  private async validateDates(startDate: Date, endDate?: Date): Promise<void> {
+    try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -71,28 +112,72 @@ export class OccupantsService extends BaseService<Occupant> {
         throw new BadRequestException('Tanggal mulai tidak boleh di masa lalu');
       }
 
-      if (occupantData.endDate && new Date(occupantData.endDate) <= startDate) {
+      if (endDate && new Date(endDate) <= startDate) {
         throw new BadRequestException(
           'Tanggal selesai harus lebih besar dari tanggal mulai',
         );
       }
+    } catch (error) {
+      console.error('Error in date validation:', error);
+      throw error;
+    }
+  }
 
-      const occupant = this.occupantRepository.create(occupantData);
-      occupant.room = room;
-
-      if (occupantData.emailPayer) {
-        const user = await queryRunner.manager.findOne(User, {
-          where: { email: occupantData.emailPayer },
-        });
-        if (!user) {
-          throw new NotFoundException(
-            `User dengan email ${occupantData.emailPayer} tidak ditemukan`,
-          );
-        }
-        occupant.user = user;
+  private async removeRelationUserIfNeeded(
+    occupant: Occupant,
+    queryRunner: any,
+    isPrimary?: boolean,
+  ): Promise<void> {
+    try {
+      if (occupant.isPrimary && isPrimary === false && occupant.user) {
+        await queryRunner.manager.update(
+          Occupant,
+          { id: occupant.id },
+          { user: null },
+        );
+        occupant.user = null;
       }
+    } catch (error) {
+      console.error('Error in updating user relation:', error);
+      throw error;
+    }
+  }
 
-      return queryRunner.manager.save(occupant);
+  async create(createOccupantDto: CreateOccupantDto): Promise<Occupant> {
+    return this.executeInTransaction(async (queryRunner) => {
+      try {
+        const { roomId, emailPayer, ...occupantData } = createOccupantDto;
+
+        // Validasi NIK unik
+        await this.validateNik(occupantData.nik, 0);
+
+        // Validasi kamar
+        const room = await this.validateAndGetRoom(
+          roomId,
+          { room: { id: 0 } } as Occupant,
+          occupantData.isPrimary,
+        );
+
+        // Validasi tanggal
+        await this.validateDates(
+          new Date(occupantData.startDate),
+          occupantData.endDate ? new Date(occupantData.endDate) : undefined,
+        );
+
+        const occupant = this.occupantRepository.create(occupantData);
+        occupant.room = room;
+
+        // Set user jika emailPayer disediakan
+        if (emailPayer) {
+          const user = await this.validateAndGetUser(emailPayer, queryRunner);
+          occupant.user = user;
+        }
+
+        return queryRunner.manager.save(occupant);
+      } catch (error) {
+        console.error('Error in create transaction:', error);
+        throw error;
+      }
     });
   }
 
@@ -152,100 +237,64 @@ export class OccupantsService extends BaseService<Occupant> {
     updateOccupantDto: UpdateOccupantDto,
   ): Promise<Occupant> {
     return this.executeInTransaction(async (queryRunner) => {
-      const occupant = await this.findOne(id);
-      const { roomId, emailPayer, ...occupantData } = updateOccupantDto;
+      try {
+        const occupant = await this.findOne(id);
+        const { roomId, emailPayer, ...occupantData } = updateOccupantDto;
 
-      // Validasi NIK unik jika NIK diubah
-      if (occupantData.nik && occupantData.nik !== occupant.nik) {
-        const existingNik = await this.occupantRepository.findOne({
-          where: { nik: occupantData.nik, id: Not(occupant.id) },
-        });
-        if (existingNik) {
-          throw new BadRequestException('NIK sudah terdaftar');
+        // Validasi NIK unik jika NIK diubah
+        if (occupantData.nik && occupantData.nik !== occupant.nik) {
+          await this.validateNik(occupantData.nik, occupant.id);
         }
-      }
 
-      // Update user if emailPayer is provided
-      if (emailPayer) {
-        const user = await queryRunner.manager.findOne(User, {
-          where: { email: emailPayer },
-        });
-        if (!user) {
-          throw new NotFoundException(
-            `User dengan email ${emailPayer} tidak ditemukan`,
+        // Update user if emailPayer is provided
+        if (emailPayer && emailPayer !== '') {
+          const user = await this.validateAndGetUser(emailPayer, queryRunner);
+          occupant.user = user;
+        }
+
+        // Validasi kamar jika diubah
+        if (roomId) {
+          const room = await this.validateAndGetRoom(
+            roomId,
+            occupant,
+            occupantData.isPrimary,
           );
-        }
-        occupant.user = user;
-      }
-
-      // Validasi kamar jika diubah
-      if (roomId) {
-        const room = await this.roomRepository.findOne({
-          where: { id: roomId },
-          relations: ['occupants'],
-        });
-        if (!room) {
-          throw new NotFoundException(
-            `Kamar dengan ID ${roomId} tidak ditemukan`,
-          );
+          occupant.room = room;
         }
 
-        // Validasi kapasitas kamar (kecuali jika hanya pindah kamar)
-        if (room.id !== occupant.room.id) {
-          const activeOccupants = room.occupants.filter((occ) => !occ.endDate);
-          if (activeOccupants.length >= room.capacity) {
-            throw new BadRequestException('Kamar sudah penuh');
-          }
+        // Validasi tanggal jika diubah
+        if (occupantData.startDate) {
+          const occupantStartDateSplit = occupant.startDate
+            .toISOString()
+            .split('T')[0];
+          const occupantBodyStartDateSplit = occupantData.startDate
+            ? new Date(occupantData.startDate).toISOString().split('T')[0]
+            : null;
 
-          // Validasi penghuni utama jika diubah
-          if (occupantData.isPrimary && !occupant.isPrimary) {
-            const hasPrimary = activeOccupants.some((occ) => occ.isPrimary);
-            if (hasPrimary) {
-              throw new BadRequestException(
-                'Kamar sudah memiliki penghuni utama',
-              );
-            }
+          if (
+            occupantData.startDate &&
+            occupantBodyStartDateSplit !== occupantStartDateSplit
+          ) {
+            await this.validateDates(
+              new Date(occupantData.startDate),
+              occupantData.endDate ? new Date(occupantData.endDate) : undefined,
+            );
           }
         }
 
-        occupant.room = room;
+        // Update relasi user menjadi null jika isPrimary berubah dari true ke false
+        await this.removeRelationUserIfNeeded(
+          occupant,
+          queryRunner,
+          occupantData.isPrimary,
+        );
+
+        Object.assign(occupant, occupantData);
+        return queryRunner.manager.save(occupant);
+      } catch (error) {
+        console.error('Error in update transaction:', error);
+        throw error;
       }
-
-      const occupantStartDateSplit = occupant.startDate
-        .toISOString()
-        .split('T')[0];
-      const occupantBodyStartDateSplit = occupantData.startDate
-        ? new Date(occupantData.startDate).toISOString().split('T')[0]
-        : null;
-
-      // Validasi tanggal hanya jika diubah
-      if (
-        occupantData.startDate &&
-        occupantBodyStartDateSplit !== occupantStartDateSplit
-      ) {
-        const startDate = new Date(occupantData.startDate);
-        const today = new Date();
-
-        today.setHours(0, 0, 0, 0);
-
-        if (startDate < today) {
-          throw new BadRequestException(
-            'Tanggal mulai tidak boleh di masa lalu',
-          );
-        }
-
-        if (
-          occupantData.endDate &&
-          new Date(occupantData.endDate) <= startDate
-        ) {
-          throw new BadRequestException(
-            'Tanggal selesai harus lebih besar dari tanggal mulai',
-          );
-        }
-      }
-
-      Object.assign(occupant, occupantData);
-      return queryRunner.manager.save(occupant);
     });
   }
 

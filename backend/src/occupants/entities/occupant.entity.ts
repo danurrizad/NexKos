@@ -43,9 +43,9 @@ export class Occupant {
   @Column({ nullable: true })
   note: string;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @ManyToOne(() => User, (user) => user.id, { nullable: true })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: User | null;
 
   @ManyToOne(() => Room, (room) => room.id)
   @JoinColumn({ name: 'room_id' })

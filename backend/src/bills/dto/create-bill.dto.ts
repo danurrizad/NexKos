@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { PaymentMethod } from '../enums/payment-method.enum';
 import { BillStatus } from '../enums/bill-status.enum';
-
+import { Type } from 'class-transformer';
 export class CreateBillDto {
   @IsNotEmpty()
   @IsString()
@@ -40,10 +40,12 @@ export class CreateBillDto {
 
   @IsNotEmpty()
   @IsDate()
+  @Type(() => Date)
   dueDate: Date;
 
   @IsOptional()
   @IsDate()
+  @Type(() => Date)
   issueDate?: Date;
 
   @IsOptional()

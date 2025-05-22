@@ -15,7 +15,7 @@ export class Bill {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   transactionNumber: string;
 
   @Column()
@@ -42,10 +42,10 @@ export class Bill {
   })
   paymentMethod: PaymentMethod;
 
-  @Column()
+  @Column({ type: 'date' })
   dueDate: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'date', nullable: true })
   issueDate: Date;
 
   @Column({ nullable: true })

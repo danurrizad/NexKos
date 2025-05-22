@@ -8,12 +8,9 @@ import {
 } from 'class-validator';
 import { PaymentMethod } from '../enums/payment-method.enum';
 import { BillStatus } from '../enums/bill-status.enum';
+import { Type } from 'class-transformer';
 
 export class UpdateBillDto {
-  @IsString()
-  @IsOptional()
-  transactionNumber?: string;
-
   @IsNumber()
   @IsOptional()
   @Min(1)
@@ -39,10 +36,12 @@ export class UpdateBillDto {
 
   @IsDate()
   @IsOptional()
+  @Type(() => Date)
   dueDate?: Date;
 
   @IsDate()
   @IsOptional()
+  @Type(() => Date)
   issueDate?: Date;
 
   @IsString()
