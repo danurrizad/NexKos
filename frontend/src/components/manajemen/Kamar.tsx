@@ -352,7 +352,7 @@ export default function Kamar() {
                 </div>
                 { type==="update" && (
                   <div className="mb-4">
-                    <Label>Status</Label>
+                    <Label>Status<span className="text-red-500">*</span></Label>
                     <Select 
                       placeholder="Pilih status"
                       options={optionsStatus} 
@@ -387,7 +387,7 @@ export default function Kamar() {
         <Modal
           isOpen={showModal.delete}
           onClose={()=>handleCloseModal(type)}
-          parentClass="px-100"
+         
         >
           <Card className="">
             <CardHeader>
@@ -419,7 +419,6 @@ export default function Kamar() {
   return (
     <div className="">
       { renderModal(showModal.type) }
-
       <Card >
         <CardHeader>
           <Button onClick={()=>handleOpenModal('add', form as ResponseRoom)} className="bg-white border-gray-400 border-1 border-solid ">
@@ -433,6 +432,12 @@ export default function Kamar() {
               {/* Table Header */}
               <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
                 <TableRow>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[10px]"
+                  >
+                    No
+                  </TableCell>
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[10px]"
@@ -484,24 +489,10 @@ export default function Kamar() {
                 </TableRow>
               </TableHeader>
               <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
-                { loading.fetch && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="py-10">
-                      <LoadingTable/>
-                    </TableCell>
-                  </TableRow>
-                )}
-
-                { (roomsData.length === 0 && !loading.fetch) && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10">
-                      Data kamar tidak ditemukan
-                    </TableCell>
-                  </TableRow>
-                )}
                 { (roomsData.length !== 0 && !loading.fetch) && roomsData?.map((data: ResponseRoom, index: number)=>{
                   return(
                     <TableRow key={index}>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{(pagination.currentPage-1)*pagination.totalPage + index+1}</TableCell>
                       <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
                         <div className="rounded-sm border bg-gray-100 size-[30px] flex items-center justify-center ">
                           { data.roomNumber.toString().padStart(2, '0') }
@@ -549,6 +540,16 @@ export default function Kamar() {
                 })}
               </TableBody>
             </Table>
+            { loading.fetch && (
+                <div className="py-10 text-center flex w-full text-gray-400">
+                  <LoadingTable/>
+                </div>
+              )}
+              { (roomsData.length === 0 && !loading.fetch) && (
+                <div className="py-10 text-center flex justify-center text-gray-400 w-full">
+                  Data kamar tidak ditemukan
+                </div>
+              )}
           </div>
           <div className="flex justify-center gap-5">
             <Pagination

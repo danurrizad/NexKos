@@ -135,6 +135,11 @@
   --color-theme-purple-500: #7a5af8;
 
   --color-primary1: #2267CE;
+  --color-primary1-300: #4f87e0;
+  --color-primary1-100: #2267CE;
+  --color-primary1-50: #bed8fa;
+  --color-primary2: #ddf6d2;
+  --color-primary3: #16a34a;
 
   --shadow-theme-md:
     0px 4px 8px -2px rgba(16, 24, 40, 0.1),
@@ -339,7 +344,7 @@
 
 .flatpickr-months .flatpickr-prev-month:hover svg,
 .flatpickr-months .flatpickr-next-month:hover svg {
-  @apply stroke-brand-500;
+  @apply stroke-primary1;
 }
 .flatpickr-calendar.arrowTop:before,
 .flatpickr-calendar.arrowTop:after {
@@ -458,7 +463,7 @@ span.flatpickr-weekday,
 .flatpickr-day.startRange.nextMonthDay,
 .flatpickr-day.endRange.nextMonthDay {
   background: #465fff;
-  @apply border-brand-500! bg-brand-500! hover:border-brand-500! hover:bg-brand-500!;
+  @apply border-primary1! bg-primary1! hover:border-primary1! hover:bg-primary1!;
 }
 .flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n + 1)),
 .flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n + 1)),
