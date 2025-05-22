@@ -1,5 +1,4 @@
 'use client'
-
 import React, { useEffect, useState } from "react";
 import{
   Card,
@@ -16,7 +15,7 @@ import{
 import Button from "@/components/ui/button/Button";
 import { AppRegistrationIcon, DeleteIcon } from "@/icons";
 import Badge from "@/components/ui/badge/Badge";
-import { Modal } from "@/components/ui/modal";
+import { Modal } from "../ui/modal";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Select from "@/components/form/Select";
@@ -114,12 +113,11 @@ export default function Kamar() {
   const fetchFacilities = async() => {
     try {
       const response = await getSelectionFacilities()
-      console.log("response fasilitas: ", response)
       const options = response?.data?.data.map((data: ResponseFacility)=>{
         return{
-          value: data.id,
+          value: data.id.toString(),
           text: data.name,
-          selected: false
+          selected: true
         }
       })
       setOptionsFacility(options)
@@ -177,7 +175,7 @@ export default function Kamar() {
         capacity: data.capacity,
         floor: data.floor,
         description: data.description, 
-        facilityIds: data.facilityIds
+        facilityIds:  data.facilities.map(data=>data.id)
       }) //clicked form
     }else if(type==='add'){
       setForm({
@@ -279,15 +277,14 @@ export default function Kamar() {
     if(type==='add' || type==='update'){
       return(
         <Modal
-          isOpen={showModal.add || showModal.update}
-          onClose={()=>handleCloseModal(type)}
-        >
+            parentClass="md:px-40 px-10"
+            isOpen={showModal.add || showModal.update}
+            onClose={()=>handleCloseModal(type)}
+            className="w-full 2xl:w-100"
+          >
           <Card>
-            <CardHeader>
-              { type==='add' ? "Tambah" : "Ubah"} Kamar
-            </CardHeader>
+            <CardHeader>{ type==='add' ? "Tambah" : "Ubah"} Kamar</CardHeader>
             <CardBody>
-              <form>
                 <div className="mb-4">
                   <Label>Nomor Kamar <span className="text-red-500">*</span></Label>
                   <Input
@@ -345,6 +342,7 @@ export default function Kamar() {
                   <Label>Fasilitas</Label>
                   <MultiSelect
                     label=""
+                    placeholder="Pilih fasilitas"
                     options={optionsFacility}
                     defaultSelected={form?.facilityIds?.map(String)}
                     onChange={(selectedString)=>{
@@ -354,7 +352,7 @@ export default function Kamar() {
                 </div>
                 { type==="update" && (
                   <div className="mb-4">
-                    <Label>Status</Label>
+                    <Label>Status<span className="text-red-500">*</span></Label>
                     <Select 
                       placeholder="Pilih status"
                       options={optionsStatus} 
@@ -366,7 +364,6 @@ export default function Kamar() {
                     />
                     { formErrors?.status && <Label className="text-red-500 font-light">{formErrors.status}</Label>}
                   </div> )}
-              </form>
             </CardBody>
             <CardBody>
               <div className="flex justify-end gap-4">
@@ -390,7 +387,7 @@ export default function Kamar() {
         <Modal
           isOpen={showModal.delete}
           onClose={()=>handleCloseModal(type)}
-          parentClass="px-100"
+         
         >
           <Card className="">
             <CardHeader>
@@ -422,131 +419,138 @@ export default function Kamar() {
   return (
     <div className="">
       { renderModal(showModal.type) }
-
-      <Card className="overflow-x-auto">
+      <Card >
         <CardHeader>
           <Button onClick={()=>handleOpenModal('add', form as ResponseRoom)} className="bg-white border-gray-400 border-1 border-solid ">
             + Tambah Kamar
           </Button>
         </CardHeader>
         {/* <CardBody className="min-h-[calc(100vh-200px)]"> */}
-        <CardBody className="">
-          <Table>
-            {/* Table Header */}
-            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-              <TableRow>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Nomor Kamar
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Letak (Lantai)
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Kapasitas
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Harga
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Deskripsi
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Fasilitas
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
-                >
-                  Status
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
-                >
-                  Action
-                </TableCell>
-              </TableRow>
-            </TableHeader>
-            <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
-              { loading.fetch && (
+        <CardBody>
+          <div className="overflow-x-auto">
+            <Table>
+              {/* Table Header */}
+              <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
                 <TableRow>
-                  <TableCell colSpan={7} className="py-10">
-                    <LoadingTable/>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[10px]"
+                  >
+                    No
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[10px]"
+                  >
+                    Nomor Kamar
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[10px]"
+                  >
+                    Letak (Lantai)
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[10px]"
+                  >
+                    Kapasitas
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Harga
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Deskripsi
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Fasilitas
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                  >
+                    Status
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                  >
+                    Action
                   </TableCell>
                 </TableRow>
-              )}
-
-              { (roomsData.length === 0 && !loading.fetch) && (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10">
-                    Data kamar tidak ditemukan
-                  </TableCell>
-                </TableRow>
-              )}
-              { (roomsData.length !== 0 && !loading.fetch) && roomsData?.map((data: ResponseRoom, index: number)=>{
-                return(
-                  <TableRow key={index}>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.roomNumber}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.floor}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.capacity}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
-                      {Number(data.price)?.toLocaleString('id-ID',{
-                        style: 'currency',
-                        currency: 'IDR'
-                      })}
-                    </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
-                      {data.description}
-                    </TableCell>
-                    <TableCell className="px-5 sm:px-6 text-center dark:text-white text-theme-sm ">
-                      <div className="flex gap-4 items-center flex-wrap">
-                        { data?.facilities?.map((data: ResponseFacility, index: number)=>{
-                          return(
-                            // <div key={index} className="flex bg-gray-200 rounded-[200px] px-2 py-0 gap-2">
-                              <Badge key={index} startIcon={ <IconDisplay iconName={data.icon} className="text-blue-700 " />}>
-                                {data.name}
-                              </Badge>
-                            // </div>
-                          )
+              </TableHeader>
+              <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
+                { (roomsData.length !== 0 && !loading.fetch) && roomsData?.map((data: ResponseRoom, index: number)=>{
+                  return(
+                    <TableRow key={index}>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{(pagination.currentPage-1)*pagination.totalPage + index+1}</TableCell>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                        <div className="rounded-sm border bg-gray-100 size-[30px] flex items-center justify-center ">
+                          { data.roomNumber.toString().padStart(2, '0') }
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.floor}</TableCell>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.capacity}</TableCell>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                        {Number(data.price)?.toLocaleString('id-ID',{
+                          style: 'currency',
+                          currency: 'IDR'
                         })}
+                      </TableCell>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                        {data.description}
+                      </TableCell>
+                      <TableCell className="px-5 sm:px-6 text-center dark:text-white text-theme-sm py-4 ">
+                        <div className="flex gap-4 items-center flex-wrap">
+                          { data?.facilities?.map((data: ResponseFacility, index: number)=>{
+                            return(
+                              // <div key={index} className="flex bg-gray-200 rounded-[200px] px-2 py-0 gap-2">
+                                <Badge color="light" key={index} startIcon={ <IconDisplay iconName={data.icon} className="text-gray-700 " />}>
+                                  {data.name}
+                                </Badge>
+                              // </div>
+                            )
+                          })}
 
-                      </div>
+                        </div>
 
-                    </TableCell>
-                    <TableCell className="px-5 sm:px-6 text-center dark:text-white text-theme-sm ">
-                      <Badge color={ data.status==='nonaktif' ? 'dark' : data.status==='terisi' ? 'success' : data.status==='kosong' ? 'info' : 'light'}>
-                        {data.status.toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
-                      <div className="flex justify-center gap-4">
-                        <Button className="bg-blue-500" onClick={()=>handleOpenModal('update', data)}><AppRegistrationIcon/></Button>
-                        <Button className="bg-red-500" onClick={()=>handleOpenModal('delete', data)}><DeleteIcon/></Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+                      </TableCell>
+                      <TableCell className="px-5 sm:px-6 text-center dark:text-white text-theme-sm ">
+                        <Badge color={ data.status==='nonaktif' ? 'dark' : data.status==='terisi' ? 'success' : data.status==='kosong' ? 'info' : 'light'}>
+                          {data.status.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                        <div className="flex justify-center gap-4">
+                          <Button className="bg-blue-500" onClick={()=>handleOpenModal('update', data)}><AppRegistrationIcon/></Button>
+                          <Button className="bg-red-500" onClick={()=>handleOpenModal('delete', data)}><DeleteIcon/></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+            { loading.fetch && (
+                <div className="py-10 text-center flex w-full text-gray-400">
+                  <LoadingTable/>
+                </div>
+              )}
+              { (roomsData.length === 0 && !loading.fetch) && (
+                <div className="py-10 text-center flex justify-center text-gray-400 w-full">
+                  Data kamar tidak ditemukan
+                </div>
+              )}
+          </div>
           <div className="flex justify-center gap-5">
             <Pagination
               currentPage={pagination.currentPage}

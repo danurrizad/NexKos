@@ -67,7 +67,7 @@ export class RoomsService extends BaseService<Room> {
     } = paginationQuery;
 
     const [data, total] = await this.roomRepository.findAndCount({
-      relations: ['boardingHouse', 'facilities'],
+      relations: ['boardingHouse', 'facilities', 'occupants'],
       skip: (page - 1) * limit,
       take: limit,
       order: {
@@ -127,6 +127,17 @@ export class RoomsService extends BaseService<Room> {
     return this.executeInTransaction(async (queryRunner) => {
       const room = await this.findOne(id);
       await queryRunner.manager.remove(room);
+    });
+  }
+
+  async findAllForSelection(): Promise<
+    Pick<Room, 'id' | 'roomNumber' | 'floor'>[]
+  > {
+    return this.roomRepository.find({
+      select: ['id', 'roomNumber', 'floor'],
+      order: {
+        roomNumber: 'ASC',
+      },
     });
   }
 }

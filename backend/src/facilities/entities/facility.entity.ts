@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Room } from '../../rooms/entities/room.entity';
-import { Icon } from '../enum/icon.enum';
+import { FacilityIcon } from '../enum/facility.icon.enum';
 
 @Entity('facilities')
 export class Facility {
@@ -22,11 +22,11 @@ export class Facility {
 
   @Column({
     type: 'enum',
-    enum: Icon,
-    enumName: 'icon_enum',
+    enum: FacilityIcon,
+    enumName: 'facility_icon_enum',
     nullable: true,
   })
-  icon: Icon;
+  icon: FacilityIcon;
 
   @ManyToMany(() => Room, (room) => room.id, {
     onDelete: 'CASCADE',

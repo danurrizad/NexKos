@@ -39,6 +39,8 @@ export const Modal: React.FC<ModalProps> = ({
   }, [isOpen, onClose]);
 
   useEffect(() => {
+    // document.body.style.overflowY = "unset";
+    // document.body.style.overflowX = "hidden";
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -57,7 +59,7 @@ export const Modal: React.FC<ModalProps> = ({
     : "relative rounded-3xl bg-white w-fit dark:bg-gray-900";
 
   return (
-    <div className={`fixed inset-[0px] flex items-center justify-center overflow-y-auto overflow-x-hidden z-99999 ${!parentClass?.includes("px-") && "px-40"} ${parentClass} `}>
+    <div className={`fixed w-screen left-0 top-0 h-full flex py-20 items-start justify-center overflow-y-auto overflow-x-hidden z-99999 ${!parentClass?.includes("px-") && "px-40"} ${parentClass} `}>
       {!isFullscreen && (
         <div
           className="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[5px]"
@@ -66,7 +68,7 @@ export const Modal: React.FC<ModalProps> = ({
       )}
       <div
         ref={modalRef}
-        className={`${contentClasses}  ${className}`}
+        className={`${contentClasses}  ${className} bg-primary1`}
         onClick={(e) => e.stopPropagation()}
       >
         {showCloseButton && (

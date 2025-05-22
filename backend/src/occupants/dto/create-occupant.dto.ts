@@ -1,14 +1,16 @@
 import {
   IsBoolean,
   IsDate,
+  IsEmail,
   IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  ValidateIf,
 } from 'class-validator';
 import { Gender } from '../enums/gender.enum';
-
+import { Type } from 'class-transformer';
 export class CreateOccupantDto {
   @IsNotEmpty()
   @IsNumber()
@@ -32,15 +34,22 @@ export class CreateOccupantDto {
 
   @IsNotEmpty()
   @IsDate()
+  @Type(() => Date)
   startDate: Date;
 
   @IsOptional()
   @IsDate()
+  @Type(() => Date)
   endDate?: Date;
 
   @IsOptional()
-  @IsNumber()
-  userId?: number;
+  @IsString()
+  note?: string;
+
+  @ValidateIf((o) => o.emailPayer !== undefined && o.emailPayer !== '')
+  @IsEmail()
+  @IsString()
+  emailPayer?: string;
 
   @IsNotEmpty()
   @IsNumber()

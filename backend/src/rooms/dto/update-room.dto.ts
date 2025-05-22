@@ -8,16 +8,16 @@ import {
   IsArray,
   Min,
 } from 'class-validator';
-import { Status } from '../enums/status.enum';
+import { RoomStatus } from '../enums/room.status.enum';
 
 export class UpdateRoomDto extends PartialType(CreateRoomDto) {
   @IsNumber()
   @IsOptional()
   roomNumber?: number;
 
-  @IsEnum(Status)
+  @IsEnum(RoomStatus)
   @IsOptional()
-  status?: Status;
+  status?: RoomStatus;
 
   @IsNumber()
   @Min(1)

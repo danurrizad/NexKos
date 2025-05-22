@@ -31,6 +31,11 @@ export class RoomsController {
     return this.roomsService.findAll(paginationDto);
   }
 
+  @Get('selection')
+  findAllForSelection(): Promise<Pick<Room, 'id' | 'roomNumber' | 'floor'>[]> {
+    return this.roomsService.findAllForSelection();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Room> {
     return this.roomsService.findOne(+id);

@@ -16,7 +16,7 @@ export class Occupant {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column({ type: 'bigint', unique: true })
   nik: number;
 
   @Column()
@@ -34,15 +34,18 @@ export class Occupant {
   @Column()
   isPrimary: boolean;
 
-  @Column()
+  @Column({ type: 'date' })
   startDate: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'date', nullable: true })
   endDate: Date;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @Column({ nullable: true })
+  note: string;
+
+  @ManyToOne(() => User, (user) => user.id, { nullable: true })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: User | null;
 
   @ManyToOne(() => Room, (room) => room.id)
   @JoinColumn({ name: 'room_id' })

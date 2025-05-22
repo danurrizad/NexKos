@@ -1,4 +1,4 @@
-export enum Status {
+export enum RoomStatus {
   KOSONG = 'kosong',
   TERISI = 'terisi',
   NONAKTIF = 'nonaktif',
