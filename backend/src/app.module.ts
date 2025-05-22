@@ -14,6 +14,7 @@ import { BoardingHousesModule } from './boarding-houses/boarding-houses.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { FacilitiesModule } from './facilities/facilities.module';
 import { OccupantsModule } from './occupants/occupants.module';
+import { BillsModule } from './bills/bills.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { OccupantsModule } from './occupants/occupants.module';
     RoomsModule,
     FacilitiesModule,
     OccupantsModule,
+    BillsModule,
   ],
   controllers: [AppController],
   providers: [

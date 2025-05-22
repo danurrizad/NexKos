@@ -7,16 +7,16 @@ import {
   IsNotEmpty,
   Min,
 } from 'class-validator';
-import { Status } from '../enums/status.enum';
+import { RoomStatus } from '../enums/room.status.enum';
 
 export class CreateRoomDto {
   @IsNumber()
   @IsNotEmpty()
   roomNumber: number;
 
-  @IsEnum(Status)
+  @IsEnum(RoomStatus)
   @IsNotEmpty()
-  status: Status;
+  status: RoomStatus;
 
   @IsNumber()
   @Min(1)

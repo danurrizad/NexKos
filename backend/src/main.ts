@@ -9,7 +9,26 @@ import { RolesGuard } from './auth/guards/roles.guard';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ValidationPipe()); // Fungsi untuk memvalidasi data yang dikirim ke server
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      exceptionFactory: (errors) => {
+        const messages = errors.map((error) => {
+          const constraints = error.constraints;
+          if (constraints) {
+            return Object.values(constraints)[0];
+          }
+          return `${error.property} tidak valid`;
+        });
+        return new ValidationPipe().createExceptionFactory()(errors);
+      },
+    }),
+  );
 
   // Enable CORS
   app.enableCors({
@@ -37,10 +56,10 @@ async function bootstrap() {
   app.useGlobalGuards(jwtAuthGuard, rolesGuard);
 
   // Register global exception filter
-  app.useGlobalFilters(new HttpExceptionFilter()); 
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // Register global transform interceptor
-  app.useGlobalInterceptors(new TransformInterceptor()); 
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   await app.listen(process.env.PORT ?? 5005);
 }

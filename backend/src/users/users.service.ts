@@ -12,6 +12,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { BaseService } from '../common/services/base.service';
+import { EmailVerificationDto } from './dto/email-verification.dto';
 
 @Injectable()
 export class UsersService extends BaseService<User> {
@@ -112,5 +113,19 @@ export class UsersService extends BaseService<User> {
       const user = await this.findOne(id);
       await queryRunner.manager.remove(user);
     });
+  }
+
+  async emailVerification(
+    emailVerificationDto: EmailVerificationDto,
+  ): Promise<{ exists: boolean }> {
+    const user = await this.findByEmail(emailVerificationDto.email);
+
+    if (!user) {
+      throw new BadRequestException(
+        'User belum terdaftar, silahkan register terlebih dahulu',
+      );
+    }
+
+    return { exists: true };
   }
 }

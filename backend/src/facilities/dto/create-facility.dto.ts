@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
-import { Icon } from '../enum/icon.enum';
+import { FacilityIcon } from '../enum/facility.icon.enum';
 
 export class CreateFacilityDto {
   @IsString()
@@ -10,7 +10,7 @@ export class CreateFacilityDto {
   @IsOptional()
   description?: string;
 
-  @IsEnum(Icon)
+  @IsEnum(FacilityIcon)
   @IsNotEmpty()
-  icon: Icon;
+  icon: FacilityIcon;
 }

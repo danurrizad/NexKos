@@ -11,7 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Status } from '../enums/status.enum';
+import { RoomStatus } from '../enums/room.status.enum.js';
 import { Facility } from 'src/facilities/entities/facility.entity';
 import { Occupant } from 'src/occupants/entities/occupant.entity';
 
@@ -25,10 +25,10 @@ export class Room {
 
   @Column({
     type: 'enum',
-    enum: Status,
-    default: Status.KOSONG,
+    enum: RoomStatus,
+    default: RoomStatus.KOSONG,
   })
-  status: Status;
+  status: RoomStatus;
 
   @Column({
     default: 1,

@@ -14,6 +14,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { User } from './entities/user.entity';
+import { EmailVerificationDto } from './dto/email-verification.dto';
 
 @Controller('users')
 export class UsersController {
@@ -29,6 +30,13 @@ export class UsersController {
     @Query() paginationDto: PaginationQueryDto,
   ): Promise<PaginatedResponse<User>> {
     return this.usersService.findAll(paginationDto);
+  }
+
+  @Get('check-email')
+  checkEmail(
+    @Query() emailVerificationDto: EmailVerificationDto,
+  ): Promise<{ exists: boolean }> {
+    return this.usersService.emailVerification(emailVerificationDto);
   }
 
   @Get(':id')
