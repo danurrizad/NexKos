@@ -84,8 +84,8 @@ const SelectIcon: React.FC<SelectIconProps> = ({
               className={`rounded-xl border-2 h-12 w-12 flex items-center justify-center transition-all
                 ${
                   isSelected
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-300 hover:border-blue-300"
+                    ? "border-primary1 bg-primary1-50"
+                    : "border-gray-300 hover:border-primary1-300"
                 }
                 ${disabled ? "opacity-50 cursor-not-allowed" : ""}
               `}

@@ -57,9 +57,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         {label}
       </label>
 
-      <div className="relative z-20 inline-block w-full">
+      <div className="relative z-20 inline-block w-full ">
         <div className="relative flex flex-col items-center">
-          <div onClick={toggleDropdown}  className="w-full">
+          <div onClick={toggleDropdown}  className="w-full ">
             <div className="mb-2 flex h-11 rounded-lg border border-gray-300 py-1.5 pl-3 pr-3 shadow-theme-xs outline-hidden transition focus:border-brand-300 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-300">
               <div className="flex flex-wrap flex-auto gap-2">
                 {selectedValuesText.length > 0 ? (
@@ -97,13 +97,13 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 ) : (
                   <input
                     placeholder={ placeholder ? placeholder : "Select option"}
-                    className="w-full h-full p-1 pr-2 text-sm bg-transparent border-0 outline-hidden appearance-none placeholder:text-gray-400 focus:border-0 focus:outline-hidden focus:ring-0 dark:placeholder:text-white/90"
+                    className="w-full cursor-pointer  h-full p-1 pr-2 text-sm bg-transparent border-0 outline-hidden appearance-none placeholder:text-gray-400 focus:border-0 focus:outline-hidden focus:ring-0 dark:placeholder:text-white/90"
                     readOnly
                     value={ placeholder ? placeholder : "Select option" }
                   />
                 )}
               </div>
-              <div className="flex items-center py-1 pl-1 pr-1 w-7">
+              <div className="flex items-center py-1 pl-1 pr-1 w-7" onClick={toggleDropdown} >
                 <button
                   type="button"
                   onClick={toggleDropdown} 
@@ -139,13 +139,13 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 {options.map((option, index) => (
                   <div key={index}>
                     <div
-                      className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800`}
+                      className={` ${selectedValuesText.includes(option.text) ? "bg-primary1-50" : "hover:bg-primary1-50/[0.5]"} w-full cursor-pointer `}
                       onClick={() => handleSelect(option.value)}
                     >
                       <div
                         className={`relative flex w-full items-center p-2 pl-2 ${
                           selectedOptions.includes(option.value)
-                            ? "bg-primary/10"
+                            ? "bg-primary1-50"
                             : ""
                         }`}
                       >
