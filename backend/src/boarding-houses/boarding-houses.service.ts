@@ -24,18 +24,22 @@ export class BoardingHousesService extends BaseService<BoardingHouse> {
     super(boardingHouseRepository, dataSource);
   }
 
+  private async validateOwner(ownerId: number): Promise<void> {
+    try {
+      await this.usersService.findOne(ownerId);
+    } catch (error) {
+      throw new BadRequestException(
+        `User dengan ID ${ownerId} tidak ditemukan`,
+      );
+    }
+  }
+
   async create(
     createBoardingHouseDto: CreateBoardingHouseDto,
   ): Promise<BoardingHouse> {
     return this.executeInTransaction(async (queryRunner) => {
       // Validate if owner exists
-      try {
-        await this.usersService.findOne(createBoardingHouseDto.ownerId);
-      } catch (error) {
-        throw new BadRequestException(
-          `User dengan ID ${createBoardingHouseDto.ownerId} tidak ditemukan`,
-        );
-      }
+      await this.validateOwner(createBoardingHouseDto.ownerId);
 
       const boardingHouse = this.boardingHouseRepository.create(
         createBoardingHouseDto,
@@ -95,13 +99,7 @@ export class BoardingHousesService extends BaseService<BoardingHouse> {
       const boardingHouse = await this.findOne(id);
 
       if (updateBoardingHouseDto.ownerId) {
-        try {
-          await this.usersService.findOne(updateBoardingHouseDto.ownerId);
-        } catch (error) {
-          throw new BadRequestException(
-            `User dengan ID ${updateBoardingHouseDto.ownerId} tidak ditemukan`,
-          );
-        }
+        await this.validateOwner(updateBoardingHouseDto.ownerId);
       }
 
       const updatedBoardingHouse = {

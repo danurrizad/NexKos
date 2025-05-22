@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Repository, DataSource } from 'typeorm';
 import { Bill } from './entities/bill.entity';
