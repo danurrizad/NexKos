@@ -382,6 +382,7 @@ export default function Penghuni() {
                     setFormErrors({ ...formErrors, name: ""})
                     setForm({ ...form, name: e.target.value})
                   }}
+                  error={formErrors.name !== ""}
                 />
                 { formErrors?.name && <Label className="text-red-500 font-light">{formErrors.name}</Label>}
               </div>
@@ -395,6 +396,7 @@ export default function Penghuni() {
                     setForm({ ...form, roomId: Number(e)})
                   }}
                   defaultValue={optionsRoom?.find((opt)=>opt.value === form.roomId.toString())?.value}
+                  error={formErrors.roomId !== ""}
                 />
                 { formErrors?.roomId && <Label className="text-red-500 font-light">{formErrors.roomId}</Label>}
               </div>
@@ -420,6 +422,7 @@ export default function Penghuni() {
                           setFormErrors({...formErrors, emailPayer: ""})
                           setForm({ ...form, emailPayer: e.target.value})
                         }}
+                        error={formErrors.emailPayer !== ""}
                         />
                         { loading.emailCheck && (<div className="flex items-center gap-2 text-gray-400"><Spinner/>Verifikasi email...</div>)}
                       { formErrors?.emailPayer && <Label className="text-red-500 font-light">{formErrors.emailPayer}</Label> }
@@ -435,6 +438,7 @@ export default function Penghuni() {
                     setFormErrors({ ...formErrors, nik: ""})
                     setForm({ ...form, nik: Number(e.target.value)})
                   }}
+                  error={formErrors.nik !== ""}
                 />
                 { formErrors?.nik && <Label className="text-red-500 font-light">{formErrors.nik}</Label>}
               </div>
@@ -448,6 +452,7 @@ export default function Penghuni() {
                     setForm({ ...form, gender: e})
                   }}
                   defaultValue={optionsGender?.find((opt)=>opt.value===form?.gender)?.value}
+                  error={formErrors.gender !== ""}
                 />
                 { formErrors?.gender && <Label className="text-red-500 font-light">{formErrors.gender}</Label>}
               </div>
@@ -460,6 +465,7 @@ export default function Penghuni() {
                     setFormErrors({ ...formErrors, phone: ""})
                     setForm({ ...form, phone: e.target.value})
                   }}
+                  error={formErrors.phone !== ""}
                 />
                 { formErrors?.phone && <Label className="text-red-500 font-light">{formErrors.phone}</Label>}
               </div>
@@ -473,6 +479,7 @@ export default function Penghuni() {
                     setForm({ ...form, startDate: e ? e[0].toLocaleDateString('en-CA') : "" })
                   }}
                   defaultDate={form.startDate}
+                  error={formErrors.startDate !== ""}
                 />
                 { formErrors?.startDate && <Label className="text-red-500 font-light">{formErrors.startDate}</Label>}
               </div>

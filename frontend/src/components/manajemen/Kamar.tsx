@@ -293,6 +293,7 @@ export default function Kamar() {
                       setFormErrors({...formErrors, roomNumber: ""})
                       setForm({...form, roomNumber: Number(e.target.value)})
                     }}
+                    error={formErrors.roomNumber !== ""}
                   />
                   { formErrors?.roomNumber && <Label className="text-red-500 font-light">{formErrors.roomNumber}</Label>}
                 </div>
@@ -304,6 +305,7 @@ export default function Kamar() {
                       setForm({...form, floor: Number(e.target.value)})
                     }}
                     defaultValue={form.floor?.toString()}
+                    error={formErrors.floor !== ""}
                   />
                   { formErrors?.floor && <Label className="text-red-500 font-light">{formErrors.floor}</Label>}
                 </div>
@@ -315,6 +317,7 @@ export default function Kamar() {
                       setFormErrors({...formErrors, capacity: ""})
                       setForm({ ...form, capacity: Number(e.target.value)})
                     }}
+                    error={formErrors.capacity !== ""}
                   />
                   { formErrors?.capacity && <Label className="text-red-500 font-light">{formErrors.capacity}</Label>}
                 </div>
@@ -326,6 +329,7 @@ export default function Kamar() {
                       setFormErrors({...formErrors, price: ""})
                       setForm({ ...form, price: Number(e.target.value)})
                     }}
+                    error={formErrors.price !== ""}
                   />
                   { formErrors?.price && <Label className="text-red-500 font-light">{formErrors.price}</Label>}
                 </div>
