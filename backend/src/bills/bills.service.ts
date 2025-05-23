@@ -15,6 +15,7 @@ import { BaseService } from '../common/services/base.service';
 import { RoomsService } from '../rooms/rooms.service';
 import { User } from '../users/entities/user.entity';
 import { BillStatus } from './enums/bill-status.enum';
+import { Occupant } from 'src/occupants/entities/occupant.entity';
 
 @Injectable()
 export class BillsService extends BaseService<Bill> {
@@ -50,14 +51,14 @@ export class BillsService extends BaseService<Bill> {
 
     if (dueDate < today) {
       throw new BadRequestException(
-        'Tanggal jatuh tempo tidak boleh kurang dari hari ini',
+        'Tanggal jatuh tempo sudah lewat dari hari ini, periksa kembali tanggal jatuh tempo',
       );
     }
   }
 
-  private async validateOccupant(occupantId: number): Promise<void> {
+  private async validateOccupant(occupantId: number): Promise<Occupant> {
     try {
-      await this.occupantsService.findOne(occupantId);
+      return await this.occupantsService.findOne(occupantId);
     } catch (error) {
       throw new BadRequestException(
         `Penghuni dengan ID ${occupantId} tidak ditemukan`,
@@ -101,12 +102,13 @@ export class BillsService extends BaseService<Bill> {
     const month = date.getMonth() + 1; // getMonth() returns 0-11
     const yearMonth = `${year}${month.toString().padStart(2, '0')}`;
 
-    // Find the last bill number for current month
+    // Find the last bill number for current month, including soft-deleted ones
     const lastBill = await this.billRepository
       .createQueryBuilder('bill')
       .where('bill.billNumber LIKE :pattern', {
         pattern: `BILL-${yearMonth}-%`,
       })
+      .withDeleted() // Include soft-deleted records
       .orderBy('bill.billNumber', 'DESC')
       .getOne();
 
@@ -119,7 +121,21 @@ export class BillsService extends BaseService<Bill> {
 
     // Format: BILL-YYYYMM-XXXX
     // Where XXXX is a 4-digit sequence number
-    return `BILL-${yearMonth}-${sequence.toString().padStart(4, '0')}`;
+    const billNumber = `BILL-${yearMonth}-${sequence.toString().padStart(4, '0')}`;
+
+    // Double check if the bill number exists (in case of race conditions)
+    const existingBill = await this.billRepository
+      .createQueryBuilder('bill')
+      .where('bill.billNumber = :billNumber', { billNumber })
+      .withDeleted() // Include soft-deleted records
+      .getOne();
+
+    if (existingBill) {
+      // If exists, increment sequence and try again
+      return this.generateBillNumber();
+    }
+
+    return billNumber;
   }
 
   async create(createBillDto: CreateBillDto, user: User): Promise<Bill> {
@@ -133,19 +149,17 @@ export class BillsService extends BaseService<Bill> {
       // Validate dates
       this.validateDates(createBillDto.dueDate);
 
-      // Validate if occupant exists
-      await this.validateOccupant(createBillDto.occupantId);
-
-      // Validate if room exists and get room price
-      const room = await this.roomsService.findOne(createBillDto.roomId);
+      // Validate if occupant exists and get their room
+      const occupant = await this.validateOccupant(createBillDto.occupantId);
+      await this.validateRoom(occupant.room.id);
 
       const bill = this.billRepository.create({
         ...createBillDto,
         billNumber,
-        totalAmount: room.price,
+        totalAmount: occupant.room.price,
         status: BillStatus.Belum_Dibayar,
         occupant: { id: createBillDto.occupantId },
-        room: { id: createBillDto.roomId },
+        room: { id: occupant.room.id },
         createdBy: { id: user.id },
         isDeleted: false,
       });
@@ -172,6 +186,20 @@ export class BillsService extends BaseService<Bill> {
         [orderBy]: order,
       },
       relations: ['occupant', 'room', 'createdBy'],
+      select: {
+        occupant: {
+          id: true,
+          name: true,
+        },
+        room: {
+          id: true,
+          roomNumber: true,
+        },
+        createdBy: {
+          id: true,
+          name: true,
+        },
+      }
     });
 
     const totalPages = Math.ceil(total / limit);

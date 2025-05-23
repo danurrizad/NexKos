@@ -28,9 +28,4 @@ export class CreateBillDto {
   @IsNumber()
   @Min(1)
   occupantId: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  roomId: number;
 }

@@ -31,6 +31,13 @@ export class OccupantsController {
     return this.occupantsService.findAll(paginationDto);
   }
 
+  @Get('selection')
+  findAllForSelection(): Promise<
+    Pick<Occupant, 'id' | 'name' | 'startDate' | 'room'>[]
+  > {
+    return this.occupantsService.findAllForSelection();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Occupant> {
     return this.occupantsService.findOne(+id);

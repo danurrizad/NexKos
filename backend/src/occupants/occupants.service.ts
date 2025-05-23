@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, Not } from 'typeorm';
+import { Repository, DataSource, Not, IsNull } from 'typeorm';
 import { Occupant } from './entities/occupant.entity';
 import { CreateOccupantDto } from './dto/create-occupant.dto';
 import { UpdateOccupantDto } from './dto/update-occupant.dto';
@@ -13,6 +13,7 @@ import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { BaseService } from '../common/services/base.service';
 import { Room } from '../rooms/entities/room.entity';
 import { User } from '../users/entities/user.entity';
+import { RoomStatus } from '../rooms/enums/room.status.enum';
 
 @Injectable()
 export class OccupantsService extends BaseService<Occupant> {
@@ -51,6 +52,17 @@ export class OccupantsService extends BaseService<Occupant> {
     return user;
   }
 
+  private async updateRoomStatus(room: Room, queryRunner: any): Promise<void> {
+    const activeOccupants = room.occupants.filter((occ) => !occ.endDate);
+    const newStatus =
+      activeOccupants.length > 0 ? RoomStatus.TERISI : RoomStatus.KOSONG;
+
+    if (room.status !== newStatus) {
+      await queryRunner.manager.update(Room, room.id, { status: newStatus });
+      room.status = newStatus;
+    }
+  }
+
   private async validateAndGetRoom(
     roomId: number,
     occupant: Occupant,
@@ -65,7 +77,7 @@ export class OccupantsService extends BaseService<Occupant> {
     }
 
     // Validasi kapasitas kamar (kecuali jika hanya pindah kamar)
-    if (room.id !== occupant.room.id) {
+    if (room.id !== occupant.room?.id) {
       const activeOccupants = room.occupants.filter((occ) => !occ.endDate);
       if (activeOccupants.length >= room.capacity) {
         throw new BadRequestException('Kamar sudah penuh');
@@ -142,7 +154,12 @@ export class OccupantsService extends BaseService<Occupant> {
         occupant.user = user;
       }
 
-      return queryRunner.manager.save(occupant);
+      const savedOccupant = await queryRunner.manager.save(occupant);
+
+      // Update room status after adding new occupant
+      await this.updateRoomStatus(room, queryRunner);
+
+      return savedOccupant;
     });
   }
 
@@ -244,14 +261,43 @@ export class OccupantsService extends BaseService<Occupant> {
       // Update occupant data
       Object.assign(occupant, occupantData);
 
-      return queryRunner.manager.save(occupant);
+      const updatedOccupant = await queryRunner.manager.save(occupant);
+
+      // Update room status after occupant update
+      if (updatedOccupant.room) {
+        await this.updateRoomStatus(updatedOccupant.room, queryRunner);
+      }
+
+      return updatedOccupant;
     });
   }
 
   async remove(id: number): Promise<void> {
     return this.executeInTransaction(async (queryRunner) => {
       const occupant = await this.findOne(id);
+      const room = occupant.room;
+
       await queryRunner.manager.remove(occupant);
+
+      // Update room status after removing occupant
+      if (room) {
+        await this.updateRoomStatus(room, queryRunner);
+      }
+    });
+  }
+
+  async findAllForSelection(): Promise<
+    Pick<Occupant, 'id' | 'name' | 'startDate' | 'room'>[]
+  > {
+    return this.occupantRepository.find({
+      where: { isPrimary: true, endDate: IsNull() },
+      relations: ['room'],
+      select: ['id', 'name', 'startDate', 'room'],
+      order: {
+        room: {
+          roomNumber: 'ASC',
+        },
+      },
     });
   }
 }

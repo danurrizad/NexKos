@@ -23,7 +23,7 @@ export class Bill {
   @Column()
   billingPeriod: string;
 
-  @Column()
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   totalAmount: number;
 
   @Column({
@@ -56,7 +56,7 @@ export class Bill {
   updatedAt: Date;
 
   @DeleteDateColumn({ nullable: true })
-  deletedAt: Date | null;z
+  deletedAt: Date | null;
 
   @Column({ default: false })
   isDeleted: boolean;

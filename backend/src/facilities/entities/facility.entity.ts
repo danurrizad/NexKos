@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToMany,
+  JoinTable,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -31,6 +32,7 @@ export class Facility {
   @ManyToMany(() => Room, (room) => room.id, {
     onDelete: 'CASCADE',
   })
+  @JoinTable({ name: 'room_facilities' })
   rooms: Room[];
 
   @CreateDateColumn()

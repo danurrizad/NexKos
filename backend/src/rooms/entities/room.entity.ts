@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToMany,
+  JoinTable,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -49,7 +50,10 @@ export class Room {
   @ManyToOne(() => BoardingHouse, (boardingHouse) => boardingHouse.id)
   boardingHouse: BoardingHouse;
 
-  @ManyToMany(() => Facility, (facility) => facility.id)
+  @ManyToMany(() => Facility, (facility) => facility.id, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable({ name: 'room_facilities' })
   facilities: Facility[];
 
   @OneToMany(() => Occupant, (occupant) => occupant.room)
