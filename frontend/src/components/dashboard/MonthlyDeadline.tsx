@@ -91,8 +91,8 @@ export default function MonthlyDeadline() {
                       </div>
                     </TableCell> */}
                     <TableCell className="px-5 py-4 sm:px-6 text-center text-theme-sm">
-                      <Button disabled={data.status === 'lunas'} size='sm' className={`bg-white ${data.status !== 'lunas' && 'hover:bg-blue-500'} shadow-md group`}>
-                        <OutgoingMailIcon className={`text-[#0077FF] ${data.status !== "lunas" && "group-hover:text-white"}`}/>
+                      <Button disabled={data.status === 'lunas'} size='sm' className={`bg-white ${data.status !== 'lunas' && 'hover:bg-primary1'} shadow-md group`}>
+                        <OutgoingMailIcon className={`text-primary1 ${data.status !== "lunas" && "group-hover:text-white"}`}/>
                       </Button>
                     </TableCell>
                   </TableRow>

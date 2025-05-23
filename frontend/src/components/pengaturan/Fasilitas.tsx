@@ -185,6 +185,7 @@ export default function Fasilitas(){
               parentClass="px-10"
               isOpen={showModal.add || showModal.update}
               onClose={()=>handleCloseModal(type)}
+              className="h-full"
             >
               <Card>
                 <CardHeader>
@@ -200,6 +201,7 @@ export default function Fasilitas(){
                           setFormErrors({...formErrors, name: ""})
                           setForm({...form, name: e.target.value})
                         }}
+                        error={formErrors.name !== ""}
                       />
                       { formErrors?.name && <Label className="text-red-500 font-light">{formErrors.name}</Label>}
                     </div>
@@ -320,21 +322,6 @@ export default function Fasilitas(){
                           </TableRow>
                           </TableHeader>
                           <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
-                            { loading.fetch && (
-                                <TableRow>
-                                <TableCell colSpan={5} className="py-10">
-                                    <LoadingTable/>
-                                </TableCell>
-                                </TableRow>
-                            )}
-
-                            { (facilitiesData.length === 0 && !loading.fetch) && (
-                                <TableRow>
-                                <TableCell colSpan={5} className="text-center py-10">
-                                    Data fasilitas tidak ditemukan
-                                </TableCell>
-                                </TableRow>
-                            )}
                             { (facilitiesData.length !== 0 && !loading.fetch) && facilitiesData?.map((data: ResponseFacility, index: number)=>{
                                 return(
                                 <TableRow key={index}>
@@ -355,6 +342,16 @@ export default function Fasilitas(){
                             })}
                           </TableBody>
                       </Table>
+                      { loading.fetch && (
+                          <div className="py-10 text-center flex w-full text-gray-400">
+                            <LoadingTable/>
+                          </div>
+                        )}
+                        { (facilitiesData.length === 0 && !loading.fetch) && (
+                          <div className="py-10 text-center flex justify-center text-gray-400 w-full">
+                            Data fasilitas tidak ditemukan
+                          </div>
+                        )}
                     </div>
                     <div className="flex justify-center gap-5">
                         <Pagination

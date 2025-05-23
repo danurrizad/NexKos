@@ -6,6 +6,7 @@ interface InputProps {
   name?: string;
   placeholder?: string;
   defaultValue?: string | number;
+  value?: string | number,
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
   min?: string;
@@ -23,6 +24,7 @@ const Input: FC<InputProps> = ({
   name,
   placeholder,
   defaultValue,
+  value,
   onChange,
   className = "",
   min,
@@ -44,7 +46,7 @@ const Input: FC<InputProps> = ({
   } else if (success) {
     inputClasses += ` text-success-500 border-success-400 focus:ring-success-500/10 focus:border-success-300  dark:text-success-400 dark:border-success-500`;
   } else {
-    inputClasses += ` bg-transparent text-gray-800 border-gray-300 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800`;
+    inputClasses += ` bg-transparent text-gray-800 border-gray-300 focus:border-primary1-300 focus:ring-3 focus:ring-primary1/30 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800`;
   }
 
   return (
@@ -55,6 +57,7 @@ const Input: FC<InputProps> = ({
         name={name}
         placeholder={placeholder}
         defaultValue={defaultValue}
+        value={value}
         onChange={onChange}
         min={min}
         max={max}
