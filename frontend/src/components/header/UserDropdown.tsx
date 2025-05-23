@@ -43,7 +43,6 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
           message: response?.data?.data?.message,
         })
       }
-      router.push("/signin")
     } catch (error: unknown) {
       const typedError = error as ErrorMessage
       showAlert({
@@ -53,6 +52,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
       })
     } finally{
       setLoading(false)
+      router.push("/signin")
     }
   }
 
