@@ -2,41 +2,18 @@ import {
   IsNotEmpty,
   IsNumber,
   IsString,
-  IsEnum,
   IsDate,
   Min,
   IsOptional,
+  Matches,
 } from 'class-validator';
-import { PaymentMethod } from '../enums/payment-method.enum';
-import { BillStatus } from '../enums/bill-status.enum';
 import { Type } from 'class-transformer';
+
 export class CreateBillDto {
   @IsNotEmpty()
   @IsString()
-  transactionNumber: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  month: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(2000)
-  year: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  amount: number;
-
-  @IsNotEmpty()
-  @IsEnum(BillStatus)
-  status: BillStatus;
-
-  @IsNotEmpty()
-  @IsEnum(PaymentMethod)
-  paymentMethod: PaymentMethod;
+  @Matches(/^\d{4}-\d{2}$/)
+  billingPeriod: string;
 
   @IsNotEmpty()
   @IsDate()
@@ -44,13 +21,8 @@ export class CreateBillDto {
   dueDate: Date;
 
   @IsOptional()
-  @IsDate()
-  @Type(() => Date)
-  issueDate?: Date;
-
-  @IsOptional()
   @IsString()
-  description?: string;
+  note?: string;
 
   @IsNotEmpty()
   @IsNumber()

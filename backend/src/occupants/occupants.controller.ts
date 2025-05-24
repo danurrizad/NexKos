@@ -14,8 +14,11 @@ import { UpdateOccupantDto } from './dto/update-occupant.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { Occupant } from './entities/occupant.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../users/enums/role.enum';
 
 @Controller('occupants')
+@Roles(Role.ADMIN)
 export class OccupantsController {
   constructor(private readonly occupantsService: OccupantsService) {}
 
@@ -29,6 +32,13 @@ export class OccupantsController {
     @Query() paginationDto: PaginationQueryDto,
   ): Promise<PaginatedResponse<Occupant>> {
     return this.occupantsService.findAll(paginationDto);
+  }
+
+  @Get('selection')
+  findAllForSelection(): Promise<
+    Pick<Occupant, 'id' | 'name' | 'startDate' | 'room'>[]
+  > {
+    return this.occupantsService.findAllForSelection();
   }
 
   @Get(':id')

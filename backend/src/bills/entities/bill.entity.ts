@@ -5,27 +5,26 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
-import { PaymentMethod } from '../enums/payment-method.enum';
 import { Occupant } from '../../occupants/entities/occupant.entity';
 import { BillStatus } from '../enums/bill-status.enum';
+import { Room } from '../../rooms/entities/room.entity';
+import { User } from '../../users/entities/user.entity';
 
-@Entity()
+@Entity('bills')
 export class Bill {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ unique: true })
-  transactionNumber: string;
+  billNumber: string;
 
   @Column()
-  month: number;
+  billingPeriod: string;
 
-  @Column()
-  year: number;
-
-  @Column()
-  amount: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  totalAmount: number;
 
   @Column({
     type: 'enum',
@@ -35,28 +34,30 @@ export class Bill {
   })
   status: BillStatus;
 
-  @Column({
-    type: 'enum',
-    enum: PaymentMethod,
-    enumName: 'payment_method_enum',
-  })
-  paymentMethod: PaymentMethod;
-
   @Column({ type: 'date' })
   dueDate: Date;
 
-  @Column({ type: 'date', nullable: true })
-  issueDate: Date;
-
   @Column({ nullable: true })
-  description: string;
+  note: string;
 
   @ManyToOne(() => Occupant, (occupant) => occupant.id)
   occupant: Occupant;
+
+  @ManyToOne(() => Room, (room) => room.id)
+  room: Room;
+
+  @ManyToOne(() => User, (user) => user.id, { nullable: true })
+  createdBy: User;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date | null;
+
+  @Column({ default: false })
+  isDeleted: boolean;
 }

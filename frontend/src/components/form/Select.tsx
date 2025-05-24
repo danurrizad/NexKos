@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronDownIcon, ChevronUpIcon } from "@/icons";
+import { ChevronDownIcon } from "@/icons";
+import Spinner from "../ui/spinner/Spinner";
 
 interface Option {
   value: string;
@@ -13,6 +14,8 @@ interface SelectProps {
   className?: string;
   defaultValue?: string;
   showPlaceholder?: boolean;
+  error?: boolean,
+  isLoading?: boolean
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -22,6 +25,8 @@ const Select: React.FC<SelectProps> = ({
   className = "",
   defaultValue = "",
   showPlaceholder = true,
+  error,
+  isLoading
 }) => {
   const [selectedLabel, setSelectedLabel] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
@@ -54,16 +59,18 @@ const Select: React.FC<SelectProps> = ({
     setIsOpen(false);
   };
 
+  const errorClass = " text-error-800 border-error-500 focus:ring-3 focus:ring-error-500/10  dark:text-error-400 dark:border-error-500"
+
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       {/* Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white px-4 py-2.5 text-left text-sm shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 ${selectedLabel ? "text-gray-800 dark:text-white/90" : "text-gray-400 dark:text-gray-400"}`}
+        className={`${error && errorClass} h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white px-4 py-2.5 text-left text-sm shadow-theme-xs focus:border-primary1-300 focus:outline-hidden focus:ring-3 focus:ring-primary1/30 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 ${selectedLabel ? "text-gray-800 dark:text-white/90" : "text-gray-400 dark:text-gray-400"}`}
       >
         {selectedLabel || (showPlaceholder ? placeholder : "")}
-        <span className="absolute right-3 top-3">
-          { isOpen ? <ChevronUpIcon/> : <ChevronDownIcon />}
+        <span className={`absolute right-3 top-3 transition-all duration-200 ${isOpen && "rotate-180"}`}>
+          <ChevronDownIcon />
         </span>
       </button>
 
@@ -77,7 +84,7 @@ const Select: React.FC<SelectProps> = ({
               {placeholder}
             </li>
           )}
-          {options.map((option) => (
+          {(options.length > 0 && !isLoading) && options.map((option) => (
             <li
               key={option.value}
               onClick={() => handleSelect(option)}
@@ -86,6 +93,11 @@ const Select: React.FC<SelectProps> = ({
               {option.label}
             </li>
           ))}
+          {isLoading && (
+            <div className="flex justify-center py-2">
+              <Spinner/>
+            </div>
+          )}
         </ul>
       )}
     </div>

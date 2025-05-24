@@ -201,6 +201,7 @@ export default function Fasilitas(){
                           setFormErrors({...formErrors, name: ""})
                           setForm({...form, name: e.target.value})
                         }}
+                        error={formErrors.name !== ""}
                       />
                       { formErrors?.name && <Label className="text-red-500 font-light">{formErrors.name}</Label>}
                     </div>

@@ -4,9 +4,11 @@ import { getTokens } from "@/utils/auth";
 import axiosInstance from "@/utils/AxiosInstance";
 
 interface BodyForm{
-    name: string,
-    description: string,
-    icon: string
+    billingPeriod: string,
+    dueDate: string,
+    note?: string,
+    occupantId: number,
+    roomId: number
 }
 
 interface ErrorResponse {

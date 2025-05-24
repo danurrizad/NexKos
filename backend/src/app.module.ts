@@ -15,6 +15,7 @@ import { RoomsModule } from './rooms/rooms.module';
 import { FacilitiesModule } from './facilities/facilities.module';
 import { OccupantsModule } from './occupants/occupants.module';
 import { BillsModule } from './bills/bills.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -31,8 +32,8 @@ import { BillsModule } from './bills/bills.module';
         database: config.get<string>('DATABASE_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         logging: true,
-        autoLoadEntities: true,
-        synchronize: true,
+        // autoLoadEntities: true,
+        // synchronize: true,
         // dropSchema: true,
         // migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
         // migrationsRun: true,
@@ -47,6 +48,7 @@ import { BillsModule } from './bills/bills.module';
     FacilitiesModule,
     OccupantsModule,
     BillsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -59,6 +59,14 @@ export class UsersService extends BaseService<User> {
       order: {
         [orderBy]: order,
       },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     const totalPages = Math.ceil(total / limit);
@@ -75,7 +83,17 @@ export class UsersService extends BaseService<User> {
   }
 
   async findOne(id: number): Promise<User> {
-    const user = await this.usersRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
     if (!user) {
       throw new NotFoundException(`User dengan ID ${id} tidak ditemukan`);

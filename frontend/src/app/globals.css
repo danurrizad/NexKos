@@ -134,12 +134,24 @@
 
   --color-theme-purple-500: #7a5af8;
 
+  /*green*/
+  /* --color-primary1: #16a34a;
+  --color-primary1-300: #15d151;  */
+  
+  /*blue*/
   --color-primary1: #2267CE;
-  --color-primary1-300: #4f87e0;
+  --color-primary1-300: #4f87e0; 
   --color-primary1-100: #2267CE;
   --color-primary1-50: #bed8fa;
+
+  /*light green*/
   --color-primary2: #ddf6d2;
+  
+  /*green*/
   --color-primary3: #16a34a;
+  --color-primary3-300: #15d151;
+  --color-primary3-100: #15d151;
+  --color-primary3-50: #15d151;
 
   --shadow-theme-md:
     0px 4px 8px -2px rgba(16, 24, 40, 0.1),
