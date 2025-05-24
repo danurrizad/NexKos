@@ -14,8 +14,11 @@ import { UpdateBoardingHouseDto } from './dto/update-boarding-house.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { BoardingHouse } from './entities/boarding-house.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../users/enums/role.enum';
 
 @Controller('boarding-houses')
+@Roles(Role.OWNER, Role.ADMIN)
 export class BoardingHousesController {
   constructor(private readonly boardingHousesService: BoardingHousesService) {}
 

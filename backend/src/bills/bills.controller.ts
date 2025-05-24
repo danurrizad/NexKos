@@ -16,8 +16,11 @@ import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { Bill } from './entities/bill.entity';
 import { User } from '../users/entities/user.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../users/enums/role.enum';
 
 @Controller('bills')
+@Roles(Role.ADMIN)
 export class BillsController {
   constructor(private readonly billsService: BillsService) {}
 
@@ -30,6 +33,7 @@ export class BillsController {
   }
 
   @Get()
+  @Roles(Role.ADMIN, Role.TENANT)
   findAll(
     @Query() paginationDto: PaginationQueryDto,
   ): Promise<PaginatedResponse<Bill>> {
@@ -44,6 +48,7 @@ export class BillsController {
   }
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.TENANT)
   findOne(@Param('id') id: string): Promise<Bill> {
     return this.billsService.findOne(+id);
   }
