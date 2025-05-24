@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronDownIcon } from "@/icons";
+import Spinner from "../ui/spinner/Spinner";
 
 interface Option {
   value: string;
@@ -13,7 +14,8 @@ interface SelectProps {
   className?: string;
   defaultValue?: string;
   showPlaceholder?: boolean;
-  error?: boolean
+  error?: boolean,
+  isLoading?: boolean
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -23,7 +25,8 @@ const Select: React.FC<SelectProps> = ({
   className = "",
   defaultValue = "",
   showPlaceholder = true,
-  error
+  error,
+  isLoading
 }) => {
   const [selectedLabel, setSelectedLabel] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
@@ -81,7 +84,7 @@ const Select: React.FC<SelectProps> = ({
               {placeholder}
             </li>
           )}
-          {options.map((option) => (
+          {(options.length > 0 && !isLoading) && options.map((option) => (
             <li
               key={option.value}
               onClick={() => handleSelect(option)}
@@ -90,6 +93,11 @@ const Select: React.FC<SelectProps> = ({
               {option.label}
             </li>
           ))}
+          {isLoading && (
+            <div className="flex justify-center py-2">
+              <Spinner/>
+            </div>
+          )}
         </ul>
       )}
     </div>
