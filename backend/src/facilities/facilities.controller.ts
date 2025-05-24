@@ -14,8 +14,11 @@ import { UpdateFacilityDto } from './dto/update-facility.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { Facility } from './entities/facility.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../users/enums/role.enum';
 
 @Controller('facilities')
+@Roles(Role.ADMIN)
 export class FacilitiesController {
   constructor(private readonly facilitiesService: FacilitiesService) {}
 

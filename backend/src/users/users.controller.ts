@@ -15,8 +15,11 @@ import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { User } from './entities/user.entity';
 import { EmailVerificationDto } from './dto/email-verification.dto';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from './enums/role.enum';
 
 @Controller('users')
+@Roles(Role.ADMIN)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -33,6 +36,7 @@ export class UsersController {
   }
 
   @Get('check-email')
+  @Roles(Role.TENANT, Role.OWNER, Role.ADMIN)
   checkEmail(
     @Query() emailVerificationDto: EmailVerificationDto,
   ): Promise<{ exists: boolean }> {

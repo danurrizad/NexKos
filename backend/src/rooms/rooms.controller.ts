@@ -14,8 +14,11 @@ import { UpdateRoomDto } from './dto/update-room.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 import { PaginatedResponse } from '../common/interfaces/pagination.interface';
 import { Room } from './entities/room.entity';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../users/enums/role.enum';
 
 @Controller('rooms')
+@Roles(Role.ADMIN)
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
