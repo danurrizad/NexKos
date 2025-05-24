@@ -330,7 +330,6 @@ export default function Penghuni() {
 
       
       const updatedFields = getChangedFields(originalForm, form)
-      console.log("body to submit: ", showModal.type === 'add' ? form : updatedFields)
       const response = showModal.type === 'add' ? await createOccupant(form) : await updateOccupantById(occupantId, updatedFields)
       handleCloseModal(showModal.type)
       showAlert({
