@@ -2,17 +2,12 @@
 import { useAlert } from "@/context/AlertContext";
 import { getTokens } from "@/utils/auth";
 import axiosInstance from "@/utils/AxiosInstance";
-import config from "@/utils/config";
-import axios from "axios";
 
 interface BodyForm{
-    nik: number | null,
-    name: string,
-    gender: string,
-    phone: string,
-    isPrimary: boolean,
-    startDate: string,
-    roomId: number
+    billingPeriod: string,
+    dueDate: string,
+    note?: string,
+    occupantId: number
 }
 
 interface ErrorResponse {
@@ -24,7 +19,7 @@ interface ErrorResponse {
     message?: string;
   }
 
-const useOccupantService = () =>{
+const useBillService = () =>{
     const { showAlert } = useAlert()
     const { accessToken } = getTokens()
 
@@ -57,10 +52,22 @@ const useOccupantService = () =>{
         throw error
     }
 
-    const getAllOccupants = async(page: string | number, limit: string | number) => {
+    const getAllBills = async(page: string | number, limit: string | number) => {
         try {
-            const response = await axiosInstance.get(`occupants?page=${page}&limit=${limit}`, {
-                // const response = await axios.get(`${config.BACKEND_URL}/rooms?page=${page}&limit=${limit}`, {
+            const response = await axiosInstance.get(`bills?page=${page}&limit=${limit}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+            return response
+        } catch (error) {
+            handleError(error)
+        }
+    }
+    
+    const getBillById = async(id: number) => {
+        try {
+            const response = await axiosInstance.get(`bills/${id}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -71,22 +78,9 @@ const useOccupantService = () =>{
         }
     }
 
-    const getSelectionsOccupants = async() => {
+    const createBill = async(body: BodyForm) => {
         try {
-            const response = await axiosInstance.get('occupants/selection', {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
-            return response
-        } catch (error) {
-            handleError(error)
-        }
-    }
-
-    const createOccupant = async(body: BodyForm) => {
-        try {
-            const response = await axiosInstance.post('occupants', body, {
+            const response = await axiosInstance.post('bills', body, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -97,9 +91,9 @@ const useOccupantService = () =>{
         }
     }
 
-    const updateOccupantById = async(id: number | null, body: Partial<BodyForm>) => {
+    const updateBillById = async(id: number, body: Partial<BodyForm>) => {
         try {
-            const response = await axiosInstance.patch(`occupants/${id}`, body, {
+            const response = await axiosInstance.patch(`bills/${id}`, body, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -110,9 +104,9 @@ const useOccupantService = () =>{
         }
     }
 
-    const deleteOccupantById = async(id: number | null) => {
+    const deleteBillById = async(id: number) => {
         try {
-            const response = await axiosInstance.delete(`occupants/${id}`, {
+            const response = await axiosInstance.delete(`bills/${id}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -121,25 +115,15 @@ const useOccupantService = () =>{
         } catch (error) {
             handleError(error)
         }
-    }
-
-    const checkOccupantEmail = async(email: string | undefined) => {
-            const response = await axios.get(`${config.BACKEND_URL}/users/check-email?email=${email}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
-            return response
     }
 
     return{
-        getAllOccupants,
-        getSelectionsOccupants,
-        createOccupant,
-        updateOccupantById,
-        deleteOccupantById,
-        checkOccupantEmail
+        getAllBills,
+        getBillById,
+        createBill,
+        updateBillById,
+        deleteBillById
     }
 }
 
-export default useOccupantService
+export default useBillService
