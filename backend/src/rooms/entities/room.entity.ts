@@ -3,9 +3,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  JoinTable,
   ManyToMany,
+  JoinTable,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -49,10 +48,11 @@ export class Room {
   description: string;
 
   @ManyToOne(() => BoardingHouse, (boardingHouse) => boardingHouse.id)
-  @JoinColumn({ name: 'boarding_house_id' })
   boardingHouse: BoardingHouse;
 
-  @ManyToMany(() => Facility, (facility) => facility.id)
+  @ManyToMany(() => Facility, (facility) => facility.id, {
+    onDelete: 'CASCADE',
+  })
   @JoinTable({ name: 'room_facilities' })
   facilities: Facility[];
 

@@ -17,6 +17,25 @@ export class LoginLoggingInterceptor implements NestInterceptor {
     private readonly jwtService: JwtService,
   ) {}
 
+  private getClientIp(request: Request): string {
+    // Check for forwarded IP from proxy
+    const forwardedFor = request.headers['x-forwarded-for'];
+    if (forwardedFor) {
+      // Get the first IP in the chain (client IP)
+      const ips = forwardedFor.toString().split(',');
+      return ips[0].trim();
+    }
+
+    // Check other common proxy headers
+    const realIp = request.headers['x-real-ip'];
+    if (realIp) {
+      return realIp.toString();
+    }
+
+    // Fallback to direct connection IP
+    return request.ip || request.socket.remoteAddress || 'unknown';
+  }
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest<Request>();
 
@@ -35,8 +54,7 @@ export class LoginLoggingInterceptor implements NestInterceptor {
                 email: request.body.email,
                 success: true,
               }),
-              ipAddress:
-                request.ip || request.socket.remoteAddress || 'unknown',
+              ipAddress: this.getClientIp(request),
               userAgent: request.headers['user-agent'] || 'unknown',
             };
 

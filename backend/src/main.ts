@@ -18,13 +18,6 @@ async function bootstrap() {
         enableImplicitConversion: true,
       },
       exceptionFactory: (errors) => {
-        const messages = errors.map((error) => {
-          const constraints = error.constraints;
-          if (constraints) {
-            return Object.values(constraints)[0];
-          }
-          return `${error.property} tidak valid`;
-        });
         return new ValidationPipe().createExceptionFactory()(errors);
       },
     }),

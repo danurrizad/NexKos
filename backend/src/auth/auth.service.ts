@@ -44,7 +44,6 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<TokenResponse> {
     const user = await this.usersService.findByEmail(loginDto.email);
-    console.log('userrrrrrr', user);
     if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
       throw new UnauthorizedException('Email atau password salah');
     }
