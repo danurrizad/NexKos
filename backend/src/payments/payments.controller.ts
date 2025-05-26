@@ -46,7 +46,7 @@ export class PaymentsController {
     return this.paymentsService.create(createPaymentDto, req.user);
   }
 
-  @Post('self-payment')
+  @Post('self')
   @Roles(Role.TENANT)
   @UseInterceptors(FileInterceptor('paymentProof'))
   async createSelfPayment(

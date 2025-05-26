@@ -40,4 +40,8 @@ export class CreatePaymentDto {
   @IsOptional()
   @IsString()
   gatewayName?: string;
+
+  @IsOptional()
+  @IsString()
+  note?: string;
 }

@@ -46,6 +46,9 @@ export class Payment {
   @Column({ nullable: true })
   gatewayName: string;
 
+  @Column({ nullable: true })
+  note: string;
+
   @ManyToOne(() => User, (user) => user.id)
   verifiedBy: User;
 
