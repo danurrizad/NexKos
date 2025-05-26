@@ -76,7 +76,7 @@ export class PaymentsService extends BaseService<Payment> {
         await this.billsService.update(bill.id, { status: BillStatus.Lunas });
       } else {
         await this.billsService.update(bill.id, {
-          status: BillStatus.Sebagian_Dibayar,
+          status: BillStatus.Dibayar_Sebagian,
         });
       }
 

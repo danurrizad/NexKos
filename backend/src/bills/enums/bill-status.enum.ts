@@ -1,6 +1,6 @@
 export enum BillStatus {
   Belum_Dibayar = 'belum dibayar',
-  Sebagian_Dibayar = 'sebagian dibayar',
+  Dibayar_Sebagian = 'dibayar sebagian',
   Lunas = 'lunas',
   Terlambat = 'terlambat',
 }
