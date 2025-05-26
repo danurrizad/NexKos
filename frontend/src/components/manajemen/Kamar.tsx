@@ -129,14 +129,12 @@ export default function Kamar() {
   const fetchRooms = async() => {
     try {
       const response = await getAllRooms(pagination.currentPage, pagination.limitPerPage)
-      console.log("response kamar: ", response)
       setRoomsData(response?.data.data)
       setPagination({
         currentPage: response?.data.meta.page,
         limitPerPage: response?.data.meta.limit,
         totalPage: response?.data.meta.totalPages,
       })
-      // console.log("response room get: ", response)
     } catch (error) {
       console.error(error)
     } 
@@ -161,7 +159,6 @@ export default function Kamar() {
 
   useEffect(()=>{
     fetchRooms()
-    console.log(pagination)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.currentPage, pagination.limitPerPage])
 
