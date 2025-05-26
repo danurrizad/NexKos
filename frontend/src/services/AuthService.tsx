@@ -56,7 +56,13 @@ const useAuthService = () => {
   const login = async (body: LoginBody): Promise<LoginResponse> => {
     try {
       const response = await axiosInstance.post<LoginResponse>('auth/login', body);
+      console.log('Login response:', response.data);
+      
       const { access_token, refresh_token } = response.data;
+      if (!access_token || !refresh_token) {
+        throw new Error('Invalid token response');
+      }
+      
       setTokens(access_token, refresh_token);
       return response.data;
     } catch (error) {
