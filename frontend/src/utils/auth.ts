@@ -3,6 +3,15 @@ import axiosInstance from './AxiosInstance';
 import { jwtDecode } from 'jwt-decode'
 import { useEffect, useState } from 'react';
 
+interface DecodedInterface {
+  sub: number;  // user id
+  email: string;
+  name: string;
+  role: string;
+  exp: number;  // expiration time
+  iat: number;  // issued at
+}
+
 export const setTokens = (accessToken: string, refreshToken: string) => {
   localStorage.setItem('access_token', accessToken);
   localStorage.setItem('refresh_token', refreshToken);
@@ -22,19 +31,33 @@ export const clearTokens = () => {
   localStorage.removeItem('refresh_token');
 };
 
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    const decoded = jwtDecode<DecodedInterface>(token);
+    return decoded.exp ? decoded.exp * 1000 < Date.now() : true;
+  } catch {
+    return true;
+  }
+};
+
 export const refreshAccessToken = async () => {
   const { refreshToken } = getTokens();
   if (!refreshToken || refreshToken === 'undefined') {
+    clearTokens();
     window.location.href = '/signin';
     throw new Error('No refresh token available');
   }
 
   try {
-    const response = await axiosInstance.post(`auth/refresh`, {
-      refresh_token: refreshToken,
+    const response = await axiosInstance.post(`auth/refresh-token`, {
+      token: refreshToken,
     });
 
     const { access_token, refresh_token } = response.data;
+    if (!access_token || !refresh_token) {
+      throw new Error('Invalid token response');
+    }
+
     setTokens(access_token, refresh_token);
     return access_token;
   } catch (error) {
@@ -47,36 +70,51 @@ export const logout = async () => {
   try {
     const { accessToken } = getTokens();
     if (accessToken) {
-      const response = await axiosInstance.post(
+      const decoded = jwtDecode<DecodedInterface>(accessToken);
+      await axiosInstance.post(
         `auth/logout`,
-        {},
+        { userId: decoded.sub },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      clearTokens();
-      return response
     }
   } catch (error) {
     console.error('Logout error:', error);
   } finally {
     clearTokens();
+    window.location.href = '/signin';
   }
 };
 
-// Axios interceptor to handle token refresh
+// Request interceptor
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const { accessToken } = getTokens();
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
-  // (config) => {
-  //   const { accessToken } = getTokens()
-  //   config.headers.Authorization = `Bearer ${accessToken}`;
-  //   return config
-  // },
   async (error) => {
     const originalRequest = error.config;
 
+    // Jika error bukan dari axios atau tidak ada config
+    if (!error.config) {
+      return Promise.reject(error);
+    }
+
+    // Handle 401 Unauthorized
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -85,51 +123,69 @@ axiosInstance.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
-        window.location.href = '/signin';
+        clearTokens();
+        if (window.location.pathname !== '/signin') {
+          window.location.href = '/signin';
+        }
         return Promise.reject(refreshError);
       }
     }
 
+    // Handle 403 Forbidden
+    if (error.response?.status === 403) {
+      window.location.href = '/unauthorized';
+      return Promise.reject(error);
+    }
+
+    // Handle network error
+    if (!error.response) {
+      console.error('Network Error:', error);
+      return Promise.reject(error);
+    }
+
     return Promise.reject(error);
   }
-); 
-
-interface DecodedInterface{
-  email: string,
-  name: string,
-  role: string
-}
+);
 
 const useAuth = () => {
-  const [decodedUser, setDecodedUser] = useState<DecodedInterface>({
-    email: "",
-    name: "",
-    role: ""
-  })
-  const decodeToken = async() => {
+  const [decodedUser, setDecodedUser] = useState<DecodedInterface | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const decodeToken = async () => {
     try {
-      const { accessToken } = getTokens()
-      if (accessToken){
-        const decoded: DecodedInterface = jwtDecode(accessToken)
-        setDecodedUser(decoded)
-      }else{
-        const newAccessToken = await refreshAccessToken()
-        const decoded: DecodedInterface = jwtDecode(newAccessToken)
-        setDecodedUser(decoded)
+      const { accessToken } = getTokens();
+      if (accessToken) {
+        const decoded = jwtDecode<DecodedInterface>(accessToken);
+        
+        // Check if token is expired
+        if (isTokenExpired(accessToken)) {
+          const newAccessToken = await refreshAccessToken();
+          const newDecoded = jwtDecode<DecodedInterface>(newAccessToken);
+          setDecodedUser(newDecoded);
+        } else {
+          setDecodedUser(decoded);
+        }
+      } else {
+        setDecodedUser(null);
       }
     } catch (error) {
-      console.error(error)
+      console.error('Token decode error:', error);
+      setDecodedUser(null);
+      clearTokens();
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
-  useEffect(()=>{
-    decodeToken()
-  }, [])
+  useEffect(() => {
+    decodeToken();
+  }, []);
 
-  return { 
-    decodedUser
-  }
-}
+  return {
+    user: decodedUser,
+    isLoading,
+    isAuthenticated: !!decodedUser,
+  };
+};
 
-export default useAuth
+export default useAuth;
