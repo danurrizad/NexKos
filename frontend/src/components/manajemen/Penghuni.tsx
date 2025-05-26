@@ -25,7 +25,6 @@ import Spinner from "../ui/spinner/Spinner";
 import { useAlert } from "@/context/AlertContext";
 import LoadingTable from "../tables/LoadingTable";
 import Pagination from "../tables/Pagination";
-import LimitPerPage from "../tables/LimitPerPage";
 import DatePicker from "../form/date-picker";
 import Switch from "../form/switch/Switch";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -658,22 +657,19 @@ export default function Penghuni() {
               </div>
             )}
           </div>
-          <div className="flex justify-center gap-5">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPage}
-              onPageChange={(e)=>{
-                setPagination({...pagination, currentPage: e})
-              }}
-            />
-            <LimitPerPage
-              onChangeLimit={(e)=>{
-                setPagination({ ...pagination, limit: e, currentPage: 1})
-              }}
-              limit={pagination.limit}
-              options={[10, 25, 50]}
-            />
-          </div>
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPage}
+            onPageChange={(e)=>{
+              setPagination({...pagination, currentPage: e})
+            }}
+            showLimit
+            onLimitChange={(e)=>{
+              setPagination({ ...pagination, limit: e, currentPage: 1})
+            }}
+            limitPerPage={pagination.limit}
+            options={[10, 25, 50]}
+          />
         </CardBody>
       </Card>
     </div>

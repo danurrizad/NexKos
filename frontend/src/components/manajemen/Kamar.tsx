@@ -24,7 +24,6 @@ import { useAlert } from "@/context/AlertContext";
 import Spinner from "../ui/spinner/Spinner";
 import Pagination from "../tables/Pagination";
 import LoadingTable from "../tables/LoadingTable";
-import LimitPerPage from "../tables/LimitPerPage";
 import useFacilityService from "@/services/FacilityService";
 import MultiSelect from "../form/MultiSelect";
 import IconDisplay from "../ui/icon/IconDisplay";
@@ -552,22 +551,19 @@ export default function Kamar() {
                 </div>
               )}
           </div>
-          <div className="flex justify-center gap-5">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPage}
-              onPageChange={(e)=>{
-                setPagination({...pagination, currentPage: e})
-              }}
-            />
-            <LimitPerPage
-              onChangeLimit={(e)=>{
-                setPagination({ ...pagination, limitPerPage: e, currentPage: 1})
-              }}
-              limit={pagination.limitPerPage}
-              options={[10, 25, 50]}
-            />
-          </div>
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPage}
+            onPageChange={(e)=>{
+              setPagination({...pagination, currentPage: e})
+            }}
+            showLimit
+            onLimitChange={(e)=>{
+              setPagination({ ...pagination, limitPerPage: e, currentPage: 1})
+            }}
+            limitPerPage={pagination.limitPerPage}
+            options={[10, 25, 50]}
+          />
         </CardBody>
       </Card>
     </div>
