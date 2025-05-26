@@ -274,15 +274,18 @@ const AppSidebar: React.FC = () => {
       >
         <Link href="/">
           {isExpanded || isHovered || isMobileOpen ? (
-            <h1 className="text-[2rem] dark:text-white">
-              NexKos
-            </h1>
+            <Image
+              src="/images/logo/nex-kos-horizontal.png"
+              alt="Logo"
+              width={200}
+              height={100}
+            />
           ) : (
             <Image
-              src="/images/logo/logo-icon.svg"
+              src="/images/logo/nexkos-logo.png"
               alt="Logo"
-              width={32}
-              height={32}
+              width={369}
+              height={286}
             />
           )}
         </Link>
