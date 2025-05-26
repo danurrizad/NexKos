@@ -453,6 +453,12 @@ export default function Tagihan() {
                 </TableCell>
                 <TableCell
                   isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                >
+                  Nomor Tagihan
+                </TableCell>
+                <TableCell
+                  isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Nomor Kamar
@@ -497,12 +503,6 @@ export default function Tagihan() {
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
                 >
-                  Nomor Tagihan
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
-                >
                   Status
                 </TableCell>
                 <TableCell
@@ -518,6 +518,8 @@ export default function Tagihan() {
                 return(
                   <TableRow key={index}>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{index+1}</TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.billNumber}</TableCell>
+
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
                       <div className="rounded-sm border bg-gray-100 size-[30px] flex items-center justify-center ">
                         { data?.room?.roomNumber?.toString().padStart(2, '0') }
@@ -534,7 +536,6 @@ export default function Tagihan() {
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm flex justify-between items-center">{renderPaymentMethodBody(data.paymentMethod)}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{""}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.billNumber}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-center dark:text-white text-theme-sm">{renderBodyStatus(data.status)}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-center dark:text-white text-theme-sm">
                       <div className="flex justify-center gap-4">
