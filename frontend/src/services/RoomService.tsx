@@ -1,6 +1,5 @@
 'use client';
 import { useAlert } from "@/context/AlertContext";
-import { getTokens } from "@/utils/auth";
 import axiosInstance from "@/utils/AxiosInstance";
 
 interface BodyForm{
@@ -24,7 +23,6 @@ interface ErrorResponse {
 
 const useRoomService = () =>{
     const { showAlert } = useAlert()
-    const { accessToken } = getTokens()
 
     const handleError = (error: unknown) =>{
         const typedError = error as ErrorResponse;
@@ -57,12 +55,7 @@ const useRoomService = () =>{
 
     const getAllRooms = async(page: string | number, limit: string | number) => {
         try {
-            const response = await axiosInstance.get(`rooms?page=${page}&limit=${limit}`, {
-                // const response = await axios.get(`${config.BACKEND_URL}/rooms?page=${page}&limit=${limit}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.get(`rooms?page=${page}&limit=${limit}`)
             return response
         } catch (error) {
             handleError(error)
@@ -71,12 +64,7 @@ const useRoomService = () =>{
 
     const getSelectionRooms = async() => {
         try {
-            const response = await axiosInstance.get(`rooms/selection`, {
-                // const response = await axios.get(`${config.BACKEND_URL}/rooms?page=${page}&limit=${limit}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.get(`rooms/selection`)
             return response
         } catch (error) {
             handleError(error)
@@ -85,12 +73,7 @@ const useRoomService = () =>{
 
     const createRoom = async(body: BodyForm) => {
         try {
-            const response = await axiosInstance.post('rooms', body, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
-            console.log("CREATED IN SERVICE")
+            const response = await axiosInstance.post('rooms', body)
             return response
         } catch (error: unknown) { 
             handleError(error)
@@ -99,11 +82,7 @@ const useRoomService = () =>{
 
     const updateRoomById = async(id: number, body: BodyForm) => {
         try {
-            const response = await axiosInstance.patch(`rooms/${id}`, body, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.patch(`rooms/${id}`, body)
             return response
         } catch (error) {
             handleError(error)
@@ -112,11 +91,7 @@ const useRoomService = () =>{
 
     const deleteRoomById = async(id: number) => {
         try {
-            const response = await axiosInstance.delete(`rooms/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.delete(`rooms/${id}`)
             return response
         } catch (error) {
             handleError(error)

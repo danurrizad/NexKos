@@ -1,6 +1,5 @@
 'use client';
 import { useAlert } from "@/context/AlertContext";
-import { getTokens } from "@/utils/auth";
 import axiosInstance from "@/utils/AxiosInstance";
 import config from "@/utils/config";
 import axios from "axios";
@@ -26,7 +25,6 @@ interface ErrorResponse {
 
 const useOccupantService = () =>{
     const { showAlert } = useAlert()
-    const { accessToken } = getTokens()
 
     const handleError = (error: unknown) =>{
         const typedError = error as ErrorResponse;
@@ -59,12 +57,7 @@ const useOccupantService = () =>{
 
     const getAllOccupants = async(page: string | number, limit: string | number) => {
         try {
-            const response = await axiosInstance.get(`occupants?page=${page}&limit=${limit}`, {
-                // const response = await axios.get(`${config.BACKEND_URL}/rooms?page=${page}&limit=${limit}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.get(`occupants?page=${page}&limit=${limit}`)
             return response
         } catch (error) {
             handleError(error)
@@ -73,11 +66,7 @@ const useOccupantService = () =>{
 
     const getSelectionsOccupants = async() => {
         try {
-            const response = await axiosInstance.get('occupants/selection', {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.get('occupants/selection')
             return response
         } catch (error) {
             handleError(error)
@@ -86,11 +75,7 @@ const useOccupantService = () =>{
 
     const createOccupant = async(body: BodyForm) => {
         try {
-            const response = await axiosInstance.post('occupants', body, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.post('occupants', body)
             return response
         } catch (error: unknown) { 
             handleError(error)
@@ -99,11 +84,7 @@ const useOccupantService = () =>{
 
     const updateOccupantById = async(id: number | null, body: Partial<BodyForm>) => {
         try {
-            const response = await axiosInstance.patch(`occupants/${id}`, body, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.patch(`occupants/${id}`, body)
             return response
         } catch (error) {
             handleError(error)
@@ -112,11 +93,7 @@ const useOccupantService = () =>{
 
     const deleteOccupantById = async(id: number | null) => {
         try {
-            const response = await axiosInstance.delete(`occupants/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.delete(`occupants/${id}`)
             return response
         } catch (error) {
             handleError(error)
@@ -124,11 +101,7 @@ const useOccupantService = () =>{
     }
 
     const checkOccupantEmail = async(email: string | undefined) => {
-            const response = await axios.get(`${config.BACKEND_URL}/users/check-email?email=${email}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axios.get(`${config.BACKEND_URL}/users/check-email?email=${email}`)
             return response
     }
 
