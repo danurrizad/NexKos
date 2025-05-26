@@ -44,7 +44,7 @@ export const refreshAccessToken = async () => {
   const { refreshToken } = getTokens();
   if (!refreshToken || refreshToken === 'undefined') {
     clearTokens();
-    window.location.href = '/signin';
+    window.location.href = '/login';
     throw new Error('No refresh token available');
   }
 
@@ -71,7 +71,7 @@ export const logout = async () => {
     const { accessToken } = getTokens();
     if (accessToken) {
       const decoded = jwtDecode<DecodedInterface>(accessToken);
-      await axiosInstance.post(
+      const response = await axiosInstance.post(
         `auth/logout`,
         { userId: decoded.sub },
         {
@@ -80,12 +80,12 @@ export const logout = async () => {
           },
         }
       );
+      return response
     }
   } catch (error) {
     console.error('Logout error:', error);
   } finally {
     clearTokens();
-    window.location.href = '/signin';
   }
 };
 
@@ -124,8 +124,8 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         clearTokens();
-        if (window.location.pathname !== '/signin') {
-          window.location.href = '/signin';
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
         }
         return Promise.reject(refreshError);
       }
