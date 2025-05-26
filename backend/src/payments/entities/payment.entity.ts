@@ -23,7 +23,7 @@ export class Payment {
   @Column({ type: 'date' })
   paymentDate: Date;
 
-  @Column()
+  @Column({ nullable: true })
   paymentProof: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
