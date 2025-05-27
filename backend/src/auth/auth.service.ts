@@ -88,7 +88,7 @@ export class AuthService {
     }
 
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload),
+      this.jwtService.signAsync(payload, { expiresIn: '1h' }),
       this.generateRefreshToken(user),
     ]);
 
@@ -102,7 +102,8 @@ export class AuthService {
     const refreshToken = this.refreshTokenRepository.create({
       token: uuidv4(),
       user,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      // expiresAt: new Date(Date.now() + 10000), // 10 seconds
     });
 
     await this.refreshTokenRepository.save(refreshToken);

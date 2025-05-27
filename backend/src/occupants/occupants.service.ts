@@ -286,7 +286,12 @@ export class OccupantsService extends BaseService<Occupant> {
 
       // Update room status after removing occupant
       if (room) {
-        await this.updateRoomStatus(room, queryRunner);
+        // Load room with occupants relation before updating status
+        const roomWithOccupants = await queryRunner.manager.findOne(Room, {
+          where: { id: room.id },
+          relations: ['occupants'],
+        });
+        await this.updateRoomStatus(roomWithOccupants, queryRunner);
       }
     });
   }

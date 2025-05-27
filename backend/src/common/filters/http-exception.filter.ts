@@ -68,7 +68,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
           'Anda tidak memiliki akses untuk melakukan operasi ini.';
         break;
       case HttpStatus.NOT_FOUND:
-        customMessage = 'Data yang Anda cari tidak ditemukan.';
+        if (errors) {
+          customMessage = errors[0];
+        } else {
+          customMessage = message;
+        }
         break;
       case HttpStatus.BAD_REQUEST:
         if (errors) {
