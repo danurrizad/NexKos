@@ -1,4 +1,9 @@
-import { DataSource, Repository, ObjectLiteral } from 'typeorm';
+import {
+  DataSource,
+  Repository,
+  ObjectLiteral,
+  FindOptionsWhere,
+} from 'typeorm';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -7,6 +12,10 @@ export abstract class BaseService<T extends ObjectLiteral> {
     protected readonly repository: Repository<T>,
     protected readonly dataSource: DataSource,
   ) {}
+
+  async count(options?: FindOptionsWhere<T>): Promise<number> {
+    return this.repository.count({ where: options });
+  }
 
   protected async executeInTransaction<R>(
     operation: (queryRunner: any) => Promise<R>,

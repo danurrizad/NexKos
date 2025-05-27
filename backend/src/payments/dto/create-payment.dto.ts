@@ -24,9 +24,9 @@ export class CreatePaymentDto {
   @Type(() => Date)
   paymentDate: Date;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  paymentProof: string;
+  paymentProof?: string;
 
   @IsNotEmpty()
   @IsNumber()

@@ -16,6 +16,7 @@ import { FacilitiesModule } from './facilities/facilities.module';
 import { OccupantsModule } from './occupants/occupants.module';
 import { BillsModule } from './bills/bills.module';
 import { PaymentsModule } from './payments/payments.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { PaymentsModule } from './payments/payments.module';
     OccupantsModule,
     BillsModule,
     PaymentsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

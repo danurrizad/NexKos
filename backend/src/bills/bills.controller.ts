@@ -47,6 +47,15 @@ export class BillsController {
     return this.billsService.findDeleted(paginationQuery);
   }
 
+  @Get('occupant/:occupantId')
+  @Roles(Role.ADMIN, Role.TENANT)
+  findAllByOccupantId(
+    @Param('occupantId') occupantId: string,
+    @Query() paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResponse<Bill>> {
+    return this.billsService.findAllByOccupantId(+occupantId, paginationQuery);
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN, Role.TENANT)
   findOne(@Param('id') id: string): Promise<Bill> {

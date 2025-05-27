@@ -40,7 +40,7 @@ export class PaymentsService extends BaseService<Payment> {
           `Bill dengan id ${createPaymentDto.billId} tidak ditemukan`,
         );
       }
-
+      
       // Check if payment amount exceeds remaining bill amount
       const existingPayments = await this.paymentRepository.find({
         where: {
@@ -67,18 +67,21 @@ export class PaymentsService extends BaseService<Payment> {
         status: PaymentStatus.Diterima,
         verifiedBy: user,
         isDeleted: false,
-        bill: { id: createPaymentDto.billId },
+        bill: bill,
       });
+
 
       // Update bill status based on payment amount
       const newTotalPaid = totalPaid + Number(createPaymentDto.amountPaid);
       if (newTotalPaid >= Number(bill.totalAmount)) {
-        await this.billsService.update(bill.id, { status: BillStatus.Lunas });
+        bill.status = BillStatus.Lunas;
       } else {
-        await this.billsService.update(bill.id, {
-          status: BillStatus.Dibayar_Sebagian,
-        });
+        bill.status = BillStatus.Dibayar_Sebagian;
       }
+      await queryRunner.manager.save(bill);
+
+      // ubah bill status di payment
+      payment.bill.status = bill.status;
 
       return queryRunner.manager.save(payment);
     });
@@ -274,7 +277,7 @@ export class PaymentsService extends BaseService<Payment> {
         status: PaymentStatus.Menunggu_Konfirmasi,
         verifiedBy: undefined,
         isDeleted: false,
-        bill: { id: createPaymentDto.billId },
+        bill: bill,
       });
 
       return queryRunner.manager.save(payment);
