@@ -199,7 +199,7 @@ export class BillsService extends BaseService<Bill> {
           id: true,
           name: true,
         },
-      }
+      },
     });
 
     const totalPages = Math.ceil(total / limit);
@@ -237,12 +237,9 @@ export class BillsService extends BaseService<Bill> {
         this.validateDates(updateBillDto.dueDate);
       }
 
-      const updatedBill = {
-        ...bill,
-        ...updateBillDto,
-      };
+      Object.assign(bill, updateBillDto);
 
-      return queryRunner.manager.save(updatedBill);
+      return queryRunner.manager.save(bill);
     });
   }
 
@@ -288,6 +285,60 @@ export class BillsService extends BaseService<Bill> {
         [orderBy]: order,
       },
       relations: ['occupant', 'room', 'createdBy'],
+    });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
+  }
+
+  async findAllByOccupantId(
+    occupantId: number,
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResponse<Bill>> {
+    const {
+      page = 1,
+      limit = 10,
+      orderBy = 'id',
+      order = 'ASC',
+    } = paginationQuery;
+
+    // Validate if occupant exists
+    await this.validateOccupant(occupantId);
+
+    const [data, total] = await this.billRepository.findAndCount({
+      where: {
+        occupant: { id: occupantId },
+        isDeleted: false,
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: {
+        [orderBy]: order,
+      },
+      relations: ['occupant', 'room', 'createdBy'],
+      select: {
+        occupant: {
+          id: true,
+          name: true,
+        },
+        room: {
+          id: true,
+          roomNumber: true,
+        },
+        createdBy: {
+          id: true,
+          name: true,
+        },
+      },
     });
 
     const totalPages = Math.ceil(total / limit);

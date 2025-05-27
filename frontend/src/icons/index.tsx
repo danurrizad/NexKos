@@ -56,6 +56,7 @@ import DashboardIcon from "./dashboard.svg";
 import HotelIcon from "./hotel.svg";
 import GroupsIcon from "./groups.svg";
 import ReceiptIcon from "./receipt.svg";
+import ReceiptShortIcon from "./receipt-short.svg";
 import OutgoingMailIcon from "./outgoing-mail.svg";
 import BedIcon from "./bed.svg";
 import PersonIcon from "./person.svg";
@@ -104,6 +105,7 @@ import WifiIcon from "./wifi.svg"
 import WomanIcon from "./woman.svg"
 import BikeIcon from "./bike.svg"
 import CarIcon from "./car.svg"
+import PreviewIcon from "./preview.svg"
 
 export {
   DownloadIcon,
@@ -164,6 +166,7 @@ export {
   HotelIcon,
   GroupsIcon,
   ReceiptIcon,
+  ReceiptShortIcon,
   OutgoingMailIcon,
   BedIcon,
   PersonIcon,
@@ -211,5 +214,6 @@ export {
   WifiIcon,
   WomanIcon,
   BikeIcon,
-  CarIcon
+  CarIcon,
+  PreviewIcon
 };

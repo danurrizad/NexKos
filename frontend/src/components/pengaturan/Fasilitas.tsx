@@ -74,7 +74,6 @@ export default function Fasilitas(){
                 limitPerPage: response?.data.meta.limit,
                 totalPage: response?.data.meta.totalPages,
             })
-            console.log('response faci: ', response)
         } catch (error) {
             console.error(error)
         }
@@ -133,11 +132,10 @@ export default function Fasilitas(){
             const hasErrors = Object.values(errors).some((msg) => msg !== "");
 
             if (hasErrors) {
-            setFormErrors(errors);
-            return;
+              setFormErrors(errors);
+              return;
             }
             const response = showModal.type==="add" ? await createFacility(form) : await updateFacilityById(Number(facilityId), form)
-            console.log('response submit: ', response)
             handleCloseModal(showModal.type)
             showAlert({
                 variant: "success",

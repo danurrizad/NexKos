@@ -138,11 +138,17 @@
   /* --color-primary1: #16a34a;
   --color-primary1-300: #15d151;  */
   
+  /* lightblue as in logo */
+  --color-primary1: #0088AA;
+  --color-primary1-300: #3DBFDF; 
+  --color-primary1-100: #56DEFF;
+  --color-primary1-50: #D6EDF4;
+
   /*blue*/
-  --color-primary1: #2267CE;
+  /* --color-primary1: #2267CE;
   --color-primary1-300: #4f87e0; 
   --color-primary1-100: #2267CE;
-  --color-primary1-50: #bed8fa;
+  --color-primary1-50: #bed8fa; */
 
   /*light green*/
   --color-primary2: #ddf6d2;

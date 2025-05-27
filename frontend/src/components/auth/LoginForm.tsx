@@ -6,7 +6,6 @@ import { EyeCloseIcon, EyeIcon } from "@/icons";
 import useAuthService from "@/services/AuthService";
 import Link from "next/link";
 import React, { FormEvent, useState } from "react";
-import { setTokens } from "@/utils/auth";
 import { useRouter } from "next/navigation";
 import { useAlert } from "@/context/AlertContext";
 import Spinner from "../ui/spinner/Spinner";
@@ -16,7 +15,7 @@ interface FormInterface {
   password: string
 }
 
-export default function SignInForm() {
+export default function LoginForm() {
   const { showAlert } = useAlert()
   const [loading, setLoading] = useState<boolean>(false)
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -33,6 +32,8 @@ export default function SignInForm() {
     try {
       setLoading(true)
       e.preventDefault()
+      
+      // Validasi form
       if(form.email === "" || form.password === ""){
         if(form.email === ""){
           setErrorEmail(true)
@@ -42,22 +43,23 @@ export default function SignInForm() {
         }
         return
       }
+      
       setErrorEmail(false)
       setErrorPass(false)
-      const response = await login(form)
-      console.log("response login: ", response)
-      if(response?.status===201){
-        setTokens(response.data.data.access_token, response.data.data.refresh_token)
-        router.push("/")
-        showAlert({
-          variant: "success",
-          title: "Sukses",
-          message: "Selamat datang!",
+      
+      // Login
+      await login(form)
+      
+      // Redirect ke home
+      router.push("/")
+      showAlert({
+        variant: "success",
+        title: "Sukses",
+        message: "Selamat datang!",
       })
-      }
     } catch (error) {
       console.error(error)
-    } finally{
+    } finally {
       setLoading(false)
     }
   }

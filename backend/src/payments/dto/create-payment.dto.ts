@@ -24,9 +24,9 @@ export class CreatePaymentDto {
   @Type(() => Date)
   paymentDate: Date;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  paymentProof: string;
+  paymentProof?: string;
 
   @IsNotEmpty()
   @IsNumber()
@@ -40,4 +40,8 @@ export class CreatePaymentDto {
   @IsOptional()
   @IsString()
   gatewayName?: string;
+
+  @IsOptional()
+  @IsString()
+  note?: string;
 }

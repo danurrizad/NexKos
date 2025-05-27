@@ -21,7 +21,7 @@ export default function UserDropdown() {
   const [loading, setLoading] = useState<boolean>(false)
   const { showAlert } = useAlert()
   const router = useRouter()
-  const { decodedUser } = useAuth()
+  const { user } = useAuth()
 
 function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
   e.stopPropagation();
@@ -52,7 +52,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
       })
     } finally{
       setLoading(false)
-      router.push("/signin")
+      router.push("/login")
     }
   }
 
@@ -66,7 +66,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
           <UserIcon className="text-gray-500"/>
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">{ decodedUser?.email.includes("danur") ? decodedUser.name : decodedUser?.email.includes("jhamez") ? decodedUser.name : "Bagus GANAZ ABIZ"}</span>
+        <span className="block mr-1 font-medium text-theme-sm">{ user?.email.includes("danur") ? user.name : user?.email.includes("jhamez") ? user.name : "Bagus GANAZ ABIZ"}</span>
 
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
@@ -95,10 +95,10 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            { decodedUser?.name === "Bagus" ? "Bagus GANAZ ABIEZ" : decodedUser?.name }
+            { user?.name.toLowerCase().includes("bagus") ? "Bagus GANAZ ABIEZ" : user?.name }
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            { decodedUser?.email === "bagus123@gmail.com" ? "bagus123palingganazzz@gmail.com" : decodedUser?.email }
+            { user?.email }
           </span>
         </div>
 

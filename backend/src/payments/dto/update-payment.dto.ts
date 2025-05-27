@@ -12,7 +12,7 @@ import { PaymentMethod } from '../enums/payment-method.enum';
 export class UpdatePaymentDto {
   @IsOptional()
   @IsString()
-  paymentProof?: string;
+  paymentProof?: string | null;
 
   @IsOptional()
   @IsDate()

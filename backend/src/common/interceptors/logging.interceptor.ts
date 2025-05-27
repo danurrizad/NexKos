@@ -10,6 +10,7 @@ import { LogEntriesService } from '../../log-entries/log-entries.service';
 import { Request } from 'express';
 
 interface JwtPayload {
+  id: number;
   sub: number;
   email: string;
   name: string;
@@ -22,7 +23,10 @@ interface JwtPayload {
 export class LoggingInterceptor implements NestInterceptor {
   constructor(private readonly logEntriesService: LogEntriesService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  async intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Promise<Observable<any>> {
     const request = context
       .switchToHttp()
       .getRequest<Request & { user?: JwtPayload }>();
@@ -39,7 +43,7 @@ export class LoggingInterceptor implements NestInterceptor {
     }
 
     // Skip logging if no user is available
-    if (!user?.sub) {
+    if (!user?.id) {
       console.log('LoggingInterceptor - Skipping due to no user');
       return next.handle();
     }
@@ -53,8 +57,14 @@ export class LoggingInterceptor implements NestInterceptor {
     ) {
       const id = request.params.id || request.body.id;
       if (id) {
-        // Store the complete request body as oldData
-        oldData = JSON.stringify(request.body);
+        const entity = request.path.split('/')[1] || 'unknown';
+        try {
+          // Get the data before update/delete
+          const data = await this.logEntriesService.getEntityData(entity, id);
+          oldData = JSON.stringify(data);
+        } catch (error) {
+          console.error('Error getting old data:', error);
+        }
       }
     }
 
@@ -85,7 +95,7 @@ export class LoggingInterceptor implements NestInterceptor {
           console.log('LoggingInterceptor - Entity ID:', entityId);
 
           const logEntry = {
-            userId: user.sub,
+            userId: user.id,
             action,
             entity: request.path.split('/')[1] || 'unknown',
             entityId,

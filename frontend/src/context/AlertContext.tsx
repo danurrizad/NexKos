@@ -57,6 +57,7 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
             showLink={alert.showLink}
             linkHref={alert.linkHref}
             linkText={alert.linkText}
+            onClose={()=>removeAlert(alert.id)}
           />
         ))}
       </div>

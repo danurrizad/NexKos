@@ -1,6 +1,7 @@
 // import ThemeTogglerTwo from "@/components/common/ThemeTogglerTwo";
 
 import { ThemeProvider } from "@/context/ThemeContext";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
@@ -14,14 +15,20 @@ export default function AuthLayout({
       <ThemeProvider>
         <div className="relative flex lg:flex-row w-full h-screen justify-center flex-col  dark:bg-gray-900 sm:p-0">
           {children}
-          <div className="lg:w-1/2 w-full h-full bg-blue-900 dark:bg-white/5 lg:grid items-center hidden">
+          <div className="lg:w-1/2 w-full h-full bg-slate-100 dark:bg-white/5 lg:grid items-center hidden">
             <div className="relative items-center justify-center  flex z-1">
               {/* <!-- ===== Common Grid Shape Start ===== --> */}
               <div className="flex flex-col items-center max-w-xs">
                 <Link href="/" className="block mb-4">
-                  <h1 className="text-6xl text-white">
+                  {/* <h1 className="text-6xl text-white">
                     NexKos
-                  </h1>
+                  </h1> */}
+                   <Image
+                      src="/images/logo/nexkos.png"
+                      alt="Logo"
+                      width={369}
+                      height={286}
+                    />
                 </Link>
                 <p className="text-center text-gray-400 dark:text-white/60">
                   Permudah proses manajemen kamar, penghuni, hingga tagihan kos milikmu

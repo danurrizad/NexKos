@@ -25,7 +25,6 @@ import Spinner from "../ui/spinner/Spinner";
 import { useAlert } from "@/context/AlertContext";
 import LoadingTable from "../tables/LoadingTable";
 import Pagination from "../tables/Pagination";
-import LimitPerPage from "../tables/LimitPerPage";
 import DatePicker from "../form/date-picker";
 import Switch from "../form/switch/Switch";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -158,7 +157,6 @@ export default function Penghuni() {
   const fetchOccupants = async() => {
     try {
       const response = await getAllOccupants(pagination.currentPage, pagination.limit)
-      console.log("response occupant: ", response)
       setOccupantsData(response?.data?.data)
       setPagination({
         currentPage: response?.data?.meta?.page || 0,
@@ -175,7 +173,7 @@ export default function Penghuni() {
       const response = await getSelectionRooms()
       const options = response?.data.data.map((data: ResponseRooms)=>{
         return{
-          label: data.roomNumber,
+          label: data.roomNumber.toString(),
           value: data.id.toString()
         }
       })
@@ -189,8 +187,7 @@ export default function Penghuni() {
     try {
       setLoading({ ...loading, emailCheck: true})
       setFormErrors({...formErrors, emailPayer: ""})
-      const response = await checkOccupantEmail(form.emailPayer)
-      console.log("response check email: ", response)
+      await checkOccupantEmail(form.emailPayer)
     } catch (errorResponse: unknown) {
       const error = errorResponse as ErrorResponse
       if(error?.response?.data?.message === 'email must be an email'){
@@ -348,6 +345,7 @@ export default function Penghuni() {
 
   const handleDelete = async() => {
     try {
+      setLoading({ ...loading, submit: true})
       const response = await deleteOccupantById(occupantId)
       showAlert({
         variant: "success",
@@ -358,6 +356,8 @@ export default function Penghuni() {
       fetchOccupants()
     } catch (error) {
       console.error(error)
+    } finally { 
+      setLoading({ ...loading, submit: false})
     }
   }
 
@@ -365,8 +365,8 @@ export default function Penghuni() {
     if(type==='add' || type==='update'){
       return(
         <Modal
-          parentClass="md:px-40 px-10 "
-          isOpen={showModal.add || showModal.update}
+        parentClass="md:px-40 px-10 "
+        isOpen={showModal.add || showModal.update}
           onClose={()=>handleCloseModal(type)}
           className="w-full 2xl:w-200"
         >
@@ -657,22 +657,19 @@ export default function Penghuni() {
               </div>
             )}
           </div>
-          <div className="flex justify-center gap-5">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPage}
-              onPageChange={(e)=>{
-                setPagination({...pagination, currentPage: e})
-              }}
-            />
-            <LimitPerPage
-              onChangeLimit={(e)=>{
-                setPagination({ ...pagination, limit: e, currentPage: 1})
-              }}
-              limit={pagination.limit}
-              options={[10, 25, 50]}
-            />
-          </div>
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPage}
+            onPageChange={(e)=>{
+              setPagination({...pagination, currentPage: e})
+            }}
+            showLimit
+            onLimitChange={(e)=>{
+              setPagination({ ...pagination, limit: e, currentPage: 1})
+            }}
+            limitPerPage={pagination.limit}
+            options={[10, 25, 50]}
+          />
         </CardBody>
       </Card>
     </div>
