@@ -11,7 +11,8 @@ import {
   HotelIcon,
   GroupsIcon,
   ReceiptIcon,
-  DresserIcon
+  DresserIcon,
+  ReceiptShortIcon
 } from "../icons/index";
 
 type NavItem = {
@@ -48,6 +49,14 @@ const navItemsManajemen: NavItem[] = [
   },
 ];
 
+const navItemsRiwayat: NavItem[] = [
+  {
+    icon: <ReceiptShortIcon/>,
+    name: "Pembayaran",
+    path: "/riwayat/pembayaran"
+  }
+]
+
 const navItemsPengaturan: NavItem[] = [
   {
     icon: <DresserIcon/>,
@@ -64,7 +73,7 @@ const AppSidebar: React.FC = () => {
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" | "manajemen" | "pengaturan"
+    menuType: "main" | "manajemen" | "pengaturan" | "riwayat"
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -189,7 +198,7 @@ const AppSidebar: React.FC = () => {
   );
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "manajemen" | "pengaturan";
+    type: "main" | "manajemen" | "pengaturan" | "riwayat";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -203,14 +212,14 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
-    ["main", "manajemen", "pengaturan"].forEach((menuType) => {
+    ["main", "manajemen", "pengaturan", "riwayat"].forEach((menuType) => {
       const items = menuType === "main" ? navItems : [];
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "manajemen" | "pengaturan", 
+                type: menuType as "main" | "manajemen" | "pengaturan" | "riwayat", 
                 index,
               });
               submenuMatched = true;
@@ -239,7 +248,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "manajemen" | "pengaturan") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "manajemen" | "pengaturan" | "riwayat") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -324,6 +333,22 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(navItemsManajemen, "manajemen")}
+            </div>
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "Riwayat"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(navItemsRiwayat, "riwayat")}
             </div>
             <div className="">
               <h2

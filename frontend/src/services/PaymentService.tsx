@@ -3,10 +3,14 @@ import { useAlert } from "@/context/AlertContext";
 import axiosInstance from "@/utils/AxiosInstance";
 
 interface BodyForm{
-    billingPeriod: string,
-    dueDate: string,
-    note?: string,
-    occupantId: number,
+  billId: number,
+  amountPaid: string,
+  paymentDate: string,
+  paymentMethod: string,
+  gatewayName: string,
+  note: string,
+  paymentProof: File | null,
+  transactionReference: string
 }
 
 interface ErrorResponse {
@@ -18,7 +22,7 @@ interface ErrorResponse {
     message?: string;
   }
 
-const useBillService = () =>{
+const usePaymentService = () =>{
     const { showAlert } = useAlert()
 
     const handleError = (error: unknown) =>{
@@ -50,54 +54,45 @@ const useBillService = () =>{
         throw error
     }
 
-    const getAllBills = async(page: string | number, limit: string | number) => {
+    const getAllPayments = async(page: string | number, limit: string | number) => {
         try {
-            const response = await axiosInstance.get(`bills?page=${page}&limit=${limit}`)
+            const response = await axiosInstance.get(`payments?page=${page}&limit=${limit}`)
             return response
         } catch (error) {
             handleError(error)
         }
     }
     
-    const getBillById = async(id: number) => {
+    const getPaymentById = async(id: number | null) => {
         try {
-            const response = await axiosInstance.get(`bills/${id}`)
+            const response = await axiosInstance.get(`payments/${id}`)
             return response
         } catch (error) {
             handleError(error)
         }
     }
 
-    const getBillsSelection = async(billNumber: string) => {
+    const createPayment = async(body: FormData) => {
         try {
-            const response = await axiosInstance.get(`bills/selection?billNumber=${billNumber}`)
-            return response
-        } catch (error) {
-            handleError(error)
-        }
-    }
-
-    const createBill = async(body: BodyForm) => {
-        try {
-            const response = await axiosInstance.post('bills', body)
+            const response = await axiosInstance.post('payments', body)
             return response
         } catch (error: unknown) { 
             handleError(error)
         }
     }
 
-    const updateBillById = async(id: number, body: Partial<BodyForm>) => {
+    const updatePaymentById = async(id: number | null, body: Partial<BodyForm>) => {
         try {
-            const response = await axiosInstance.patch(`bills/${id}`, body)
+            const response = await axiosInstance.patch(`payments/${id}`, body)
             return response
         } catch (error) {
             handleError(error)
         }
     }
 
-    const deleteBillById = async(id: number) => {
+    const deletePaymentById = async(id: number | null) => {
         try {
-            const response = await axiosInstance.delete(`bills/${id}`)
+            const response = await axiosInstance.delete(`payments/${id}`)
             return response
         } catch (error) {
             handleError(error)
@@ -105,13 +100,12 @@ const useBillService = () =>{
     }
 
     return{
-        getAllBills,
-        getBillById,
-        getBillsSelection,
-        createBill,
-        updateBillById,
-        deleteBillById
+        getAllPayments,
+        getPaymentById,
+        createPayment,
+        updatePaymentById,
+        deletePaymentById
     }
 }
 
-export default useBillService
+export default usePaymentService
