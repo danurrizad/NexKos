@@ -173,7 +173,7 @@ export default function Penghuni() {
       const response = await getSelectionRooms()
       const options = response?.data.data.map((data: ResponseRooms)=>{
         return{
-          label: data.roomNumber,
+          label: data.roomNumber.toString(),
           value: data.id.toString()
         }
       })
