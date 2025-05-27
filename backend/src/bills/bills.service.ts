@@ -237,12 +237,9 @@ export class BillsService extends BaseService<Bill> {
         this.validateDates(updateBillDto.dueDate);
       }
 
-      const updatedBill = {
-        ...bill,
-        ...updateBillDto,
-      };
+      Object.assign(bill, updateBillDto);
 
-      return queryRunner.manager.save(updatedBill);
+      return queryRunner.manager.save(bill);
     });
   }
 

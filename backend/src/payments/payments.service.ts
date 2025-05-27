@@ -40,7 +40,7 @@ export class PaymentsService extends BaseService<Payment> {
           `Bill dengan id ${createPaymentDto.billId} tidak ditemukan`,
         );
       }
-      
+
       // Check if payment amount exceeds remaining bill amount
       const existingPayments = await this.paymentRepository.find({
         where: {
@@ -69,7 +69,6 @@ export class PaymentsService extends BaseService<Payment> {
         isDeleted: false,
         bill: bill,
       });
-
 
       // Update bill status based on payment amount
       const newTotalPaid = totalPaid + Number(createPaymentDto.amountPaid);
@@ -104,7 +103,14 @@ export class PaymentsService extends BaseService<Payment> {
       order: {
         [orderBy]: order,
       },
-      relations: ['verifiedBy', 'bill'],
+      relations: ['verifiedBy', 'bill', 'bill.occupant', 'bill.room'],
+      select: {
+        verifiedBy: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
     });
 
     const totalPages = Math.ceil(total / limit);
