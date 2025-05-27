@@ -1,8 +1,8 @@
 'use client';
 import { useAlert } from "@/context/AlertContext";
 import axiosInstance from "@/utils/AxiosInstance";
-import config from "@/utils/config";
-import axios from "axios";
+// import config from "@/utils/config";
+// import axios from "axios";
 
 interface BodyForm{
     nik: number | null,
@@ -101,7 +101,8 @@ const useOccupantService = () =>{
     }
 
     const checkOccupantEmail = async(email: string | undefined) => {
-            const response = await axios.get(`${config.BACKEND_URL}/users/check-email?email=${email}`)
+            // const response = await axios.get(`${config.BACKEND_URL}/users/check-email?email=${email}`)
+            const response = await axiosInstance.get(`/users/check-email?email=${email}`)
             return response
     }
 
