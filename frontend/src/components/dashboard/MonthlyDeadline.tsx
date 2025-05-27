@@ -8,25 +8,69 @@ import {
 } from '../ui/table'
 import  Button from '../ui/button/Button'
 
-import { data } from '../../services/TableDummy'
 import { OutgoingMailIcon } from '@/icons'
 import Badge from '../ui/badge/Badge';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import useDashboardService from '@/services/DashboardService';
 
-export default function MonthlyDeadline() {  
-  const parseDate = (dateStr: string): Date => {
-    const [day, month, year] = dateStr.split("/").map(Number);
-    return new Date(year, month - 1, day);
-  };
-  
-  const sortedData = [...data].sort((a, b) => {
-    // Prioritize "belum bayar" over "lunas"
-    if (a.status !== b.status) {
-      return a.status === "belum bayar" ? -1 : 1;
+interface Loadings {
+  metrics: boolean,
+  monthlyDeadline: boolean,
+  monthlySummary: boolean
+}
+
+interface MonthlyDeadlineProps {
+  loading: Loadings,
+  setLoading: Dispatch<SetStateAction<Loadings>>
+}
+
+interface ResponseProps{
+  room: {
+    roomNumber: string
+  },
+  occupant: {
+    name: string
+  },
+  dueDate: string,
+  status: string
+}
+
+export default function MonthlyDeadline({ loading, setLoading } : MonthlyDeadlineProps) {  
+  const { getBillRecent } = useDashboardService()
+  const [monthlyDeadlineData, setMonthlyDeadlineData] = useState<ResponseProps[]>([])
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPage: 0,
+    limit: 10
+  })
+
+  const fetchMonthlyDeadline = async() => {
+    try {
+      setLoading({ ...loading, monthlyDeadline: true})
+      const response = await getBillRecent(pagination.currentPage, pagination.limit)
+      console.log("response deadlines bill", response)
+      setMonthlyDeadlineData(response?.data?.data)
+      setPagination({
+        currentPage: response?.data?.meta?.page,
+        totalPage: response?.data?.meta?.totalPages,
+        limit: response?.data?.meta?.limit,
+      })
+    } catch (error) {
+      console.error(error)
+    } finally{
+      setLoading({ ...loading, monthlyDeadline: false})
     }
+  }
+
+  useEffect(()=>{
+    fetchMonthlyDeadline()
+  }, [])
+
+  if(loading.monthlyDeadline){
+    return
+  }
+
   
-    // If status is the same, sort by deadline
-    return parseDate(a.deadline).getTime() - parseDate(b.deadline).getTime();
-  });
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -55,6 +99,12 @@ export default function MonthlyDeadline() {
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
+                  Penghuni
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
                   Waktu Tenggat
                 </TableCell>
                 <TableCell
@@ -72,24 +122,23 @@ export default function MonthlyDeadline() {
               </TableRow>
             </TableHeader>
             <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
-              { sortedData.map((data, index)=>{
+              { monthlyDeadlineData?.map((data: ResponseProps, index: number)=>{
                 return(
                   <TableRow key={index}>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{index+1}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.roomNumber}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.deadline}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm flex justify-center items-center h-full">
+                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                      <div className="rounded-sm border bg-gray-100 size-[30px] flex items-center justify-center ">
+                        { data?.room?.roomNumber.toString().padStart(2, '0') }
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.occupant.name}</TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.dueDate}</TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
                       <Badge color={data.status==='lunas' ? 'success' : 'error'}>
-                        {data.status.toUpperCase()}
+                        {data?.status.toUpperCase()}
                       </Badge>
                     </TableCell>
-                    {/* <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
-                      <div className={`${data.status === 'lunas' ? "bg-green-200" : "bg-red-200"} rounded-sm text-center`}>
-                        <span className={`font-bold ${data.status === 'lunas' ? "text-green-800" : "text-red-800"}`}>
-                          {data.status.toUpperCase()}
-                        </span>
-                      </div>
-                    </TableCell> */}
+                    
                     <TableCell className="px-5 py-4 sm:px-6 text-center text-theme-sm">
                       <Button disabled={data.status === 'lunas'} size='sm' className={`bg-white ${data.status !== 'lunas' && 'hover:bg-primary1'} shadow-md group`}>
                         <OutgoingMailIcon className={`text-primary1 ${data.status !== "lunas" && "group-hover:text-white"}`}/>
