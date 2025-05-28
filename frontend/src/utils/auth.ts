@@ -47,23 +47,26 @@ export const refreshAccessToken = async () => {
   const { refreshToken } = getTokens();
   if (!refreshToken || refreshToken === 'undefined') {
     clearTokens();
-    // window.location.href = '/login';
     throw new Error('No refresh token available');
   }
 
   try {
+    console.log('Attempting to refresh token with:', refreshToken);
     const response = await axiosInstance.post(`auth/refresh`, {
       token: refreshToken,
     });
 
     const { access_token, refresh_token } = response.data;
     if (!access_token || !refresh_token) {
+      console.error('Invalid token response:', response.data);
       throw new Error('Invalid token response');
     }
 
+    console.log('Successfully refreshed tokens');
     setTokens(access_token, refresh_token);
     return access_token;
   } catch (error) {
+    console.error('Error refreshing token:', error);
     clearTokens();
     throw error;
   }
@@ -122,14 +125,14 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
+        console.log('Access token expired, attempting to refresh...');
         const newAccessToken = await refreshAccessToken();
+        console.log('Successfully obtained new access token');
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
+        console.error('Failed to refresh token:', refreshError);
         clearTokens();
-        // if (window.location.pathname !== '/login') {
-        //   window.location.href = '/login';
-        // }
         return Promise.reject(refreshError);
       }
     }
