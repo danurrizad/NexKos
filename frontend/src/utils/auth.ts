@@ -21,11 +21,8 @@ export const getTokens = () => {
   if (typeof window !== 'undefined') {
     const accessToken = localStorage.getItem('access_token');
     const refreshToken = localStorage.getItem('refresh_token');
-    console.log('accessToken', accessToken);
-    console.log('refreshToken', refreshToken);
     return { accessToken, refreshToken };
   }
-  console.log('diluar if')
   return { accessToken: null, refreshToken: null };
 };
 
@@ -47,27 +44,25 @@ export const refreshAccessToken = async () => {
   const { refreshToken } = getTokens();
   if (!refreshToken || refreshToken === 'undefined') {
     clearTokens();
+    window.location.href = '/login';
     throw new Error('No refresh token available');
   }
 
   try {
-    console.log('Attempting to refresh token with:', refreshToken);
     const response = await axiosInstance.post(`auth/refresh`, {
       token: refreshToken,
     });
 
     const { access_token, refresh_token } = response.data;
     if (!access_token || !refresh_token) {
-      console.error('Invalid token response:', response.data);
       throw new Error('Invalid token response');
     }
 
-    console.log('Successfully refreshed tokens');
     setTokens(access_token, refresh_token);
     return access_token;
   } catch (error) {
-    console.error('Error refreshing token:', error);
     clearTokens();
+    window.location.href = '/login';
     throw error;
   }
 };
@@ -89,9 +84,11 @@ export const logout = async () => {
       return response
     }
   } catch (error) {
-    console.error('Logout error:', error);
+    console.log('Error logging out:', error);
+    // Handle error silently
   } finally {
     clearTokens();
+    window.location.href = '/login';
   }
 };
 
@@ -115,37 +112,30 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Jika error bukan dari axios atau tidak ada config
     if (!error.config) {
       return Promise.reject(error);
     }
 
-    // Handle 401 Unauthorized
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        console.log('Access token expired, attempting to refresh...');
         const newAccessToken = await refreshAccessToken();
-        console.log('Successfully obtained new access token');
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.error('Failed to refresh token:', refreshError);
         clearTokens();
+        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
 
-    // Handle 403 Forbidden
     if (error.response?.status === 403) {
       window.location.href = '/unauthorized';
       return Promise.reject(error);
     }
 
-    // Handle network error
     if (!error.response) {
-      console.error('Network Error:', error);
       return Promise.reject(error);
     }
 
@@ -163,7 +153,6 @@ const useAuth = () => {
       if (accessToken) {
         const decoded = jwtDecode<DecodedInterface>(accessToken);
         
-        // Check if token is expired
         if (isTokenExpired(accessToken)) {
           const newAccessToken = await refreshAccessToken();
           const newDecoded = jwtDecode<DecodedInterface>(newAccessToken);
@@ -175,9 +164,9 @@ const useAuth = () => {
         setDecodedUser(null);
       }
     } catch (error) {
-      console.error('Token decode error:', error);
       setDecodedUser(null);
       clearTokens();
+      window.location.href = '/login';
     } finally {
       setIsLoading(false);
     }
