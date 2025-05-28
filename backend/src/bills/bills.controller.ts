@@ -40,6 +40,14 @@ export class BillsController {
     return this.billsService.findAll(paginationDto);
   }
 
+  @Get('selection')
+  @Roles(Role.ADMIN, Role.TENANT)
+  findAllForSelection(
+    @Query('billNumber') billNumber?: string,
+  ): Promise<Pick<Bill, 'id' | 'billNumber' | 'billingPeriod' | 'status'>[]> {
+    return this.billsService.findAllForSelection(billNumber);
+  }
+
   @Get('deleted')
   findDeleted(
     @Query() paginationQuery: PaginationQueryDto,

@@ -10,7 +10,7 @@ import { Bill } from 'src/bills/entities/bill.entity';
 import { PaginatedResponse } from 'src/common/interfaces/pagination.interface';
 import { PaginationQueryDto } from 'src/common/dto/pagination.query.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { BillStatus } from 'src/bills/enums/bill-status.enum';
 import { BillAndPaymentSummary } from './interface/bill-payment.interface';
 import { Not, IsNull, Between } from 'typeorm';
@@ -136,14 +136,25 @@ export class DashboardService {
       status: PaymentStatus.Diterima,
     });
 
-    const totalUnpaidBills = await this.billRepository.sum('totalAmount', {
-      isDeleted: false,
-      status: BillStatus.Belum_Dibayar,
-      billingPeriod: Between(
-        startOfMonth.toISOString().slice(0, 7),
-        endOfMonth.toISOString().slice(0, 7),
-      ),
+    const bills = await this.billRepository.find({
+      where: {
+        isDeleted: false,
+        status: In([BillStatus.Belum_Dibayar, BillStatus.Dibayar_Sebagian]),
+        billingPeriod: Between(
+          startOfMonth.toISOString().slice(0, 7),
+          endOfMonth.toISOString().slice(0, 7),
+        ),
+      },
+      relations: ['payments'],
     });
+
+    const totalUnpaidBills = bills.reduce((total, bill) => {
+      const totalPaid = bill.payments.reduce(
+        (sum, payment) => sum + Number(payment.amountPaid),
+        0,
+      );
+      return total + (Number(bill.totalAmount) - totalPaid);
+    }, 0);
 
     return {
       totalBillsCreated,

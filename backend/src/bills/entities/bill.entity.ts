@@ -6,11 +6,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Occupant } from '../../occupants/entities/occupant.entity';
 import { BillStatus } from '../enums/bill-status.enum';
 import { Room } from '../../rooms/entities/room.entity';
 import { User } from '../../users/entities/user.entity';
+import { Payment } from '../../payments/entities/payment.entity';
 
 @Entity('bills')
 export class Bill {
@@ -48,6 +50,9 @@ export class Bill {
 
   @ManyToOne(() => User, (user) => user.id, { nullable: true })
   createdBy: User;
+
+  @OneToMany(() => Payment, (payment) => payment.bill)
+  payments: Payment[];
 
   @CreateDateColumn()
   createdAt: Date;
