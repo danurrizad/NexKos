@@ -21,8 +21,11 @@ export const getTokens = () => {
   if (typeof window !== 'undefined') {
     const accessToken = localStorage.getItem('access_token');
     const refreshToken = localStorage.getItem('refresh_token');
+    console.log('accessToken', accessToken);
+    console.log('refreshToken', refreshToken);
     return { accessToken, refreshToken };
   }
+  console.log('diluar if')
   return { accessToken: null, refreshToken: null };
 };
 
@@ -44,7 +47,7 @@ export const refreshAccessToken = async () => {
   const { refreshToken } = getTokens();
   if (!refreshToken || refreshToken === 'undefined') {
     clearTokens();
-    window.location.href = '/login';
+    // window.location.href = '/login';
     throw new Error('No refresh token available');
   }
 
