@@ -2,8 +2,8 @@ import React from "react"
 import Select from "../form/Select";
 
 type LimitPerPageProps = {
-    limit: number;
-    onChangeLimit: (limitPage: number) => void;
+    limit?: number;
+    onChangeLimit?: (limitPage: number) => void ;
     options: number[]
 }
 
@@ -21,9 +21,9 @@ const LimitPerPage: React.FC<LimitPerPageProps> = ({
     return(
         <div className="w-[75px] py-0">
             <Select
-                defaultValue={limit.toString()}
+                defaultValue={limit?.toString()}
                 options={optionsLimit}
-                onChange={(e)=>onChangeLimit(Number(e))}
+                onChange={(e) => onChangeLimit ? onChangeLimit(Number(e)) : ()=>{}}
                 showPlaceholder={false}
                 className="py-0"
             />

@@ -2,16 +2,6 @@
 import { useAlert } from "@/context/AlertContext";
 import axiosInstance from "@/utils/AxiosInstance";
 
-interface BodyForm{
-    roomNumber: number | null,
-    status: string,
-    price: number | null,
-    capacity: number | null,
-    floor: number | null,
-    description: string,
-    facilityIds: number[]
-}
-
 interface ErrorResponse {
     response?: {
       data?: {
@@ -21,7 +11,7 @@ interface ErrorResponse {
     message?: string;
   }
 
-const useRoomService = () =>{
+const useDashboardService = () =>{
     const { showAlert } = useAlert()
 
     const handleError = (error: unknown) =>{
@@ -53,58 +43,39 @@ const useRoomService = () =>{
         throw error
     }
 
-    const getAllRooms = async(page: string | number, limit: string | number) => {
+    const getTotalSummary = async() => {
         try {
-            const response = await axiosInstance.get(`rooms?page=${page}&limit=${limit}`)
+            const response = await axiosInstance.get(`/dashboard/summary`)
             return response
         } catch (error) {
             handleError(error)
         }
     }
 
-    const getSelectionRooms = async() => {
+    const getBillPaymentSummary = async (period: string) => {
         try {
-            const response = await axiosInstance.get(`rooms/selection`)
+            const response = await axiosInstance.get(`dashboard/bill-payment-summary?monthPeriod=${period}`)
             return response
         } catch (error) {
             handleError(error)
         }
     }
 
-    const createRoom = async(body: BodyForm) => {
+    const getBillRecent = async (page: number, limit: number) => {
         try {
-            const response = await axiosInstance.post('rooms', body)
-            return response
-        } catch (error: unknown) { 
-            handleError(error)
-        }
-    }
-
-    const updateRoomById = async(id: number, body: BodyForm) => {
-        try {
-            const response = await axiosInstance.patch(`rooms/${id}`, body)
+            const response = await axiosInstance.get(`dashboard/bill-recent?page=${page}&limit=${limit}`)
             return response
         } catch (error) {
             handleError(error)
         }
     }
-
-    const deleteRoomById = async(id: number) => {
-        try {
-            const response = await axiosInstance.delete(`rooms/${id}`)
-            return response
-        } catch (error) {
-            handleError(error)
-        }
-    }
+    
 
     return{
-        getAllRooms,
-        getSelectionRooms,
-        createRoom,
-        updateRoomById,
-        deleteRoomById
+        getTotalSummary,
+        getBillPaymentSummary,
+        getBillRecent
     }
 }
 
-export default useRoomService
+export default useDashboardService

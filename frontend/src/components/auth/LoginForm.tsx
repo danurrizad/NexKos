@@ -15,7 +15,7 @@ interface FormInterface {
   password: string
 }
 
-export default function SignInForm() {
+export default function LoginForm() {
   const { showAlert } = useAlert()
   const [loading, setLoading] = useState<boolean>(false)
   const [showPassword, setShowPassword] = useState<boolean>(false);

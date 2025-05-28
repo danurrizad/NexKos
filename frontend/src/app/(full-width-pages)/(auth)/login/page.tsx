@@ -1,4 +1,4 @@
-import SignInForm from "@/components/auth/SignInForm";
+import LoginForm from "@/components/auth/LoginForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -6,6 +6,6 @@ export const metadata: Metadata = {
   description: "Login to NexKos",
 };
 
-export default function SignIn() {
-  return <SignInForm />;
+export default function Login() {
+  return <LoginForm />;
 }

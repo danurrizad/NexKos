@@ -1,13 +1,12 @@
 'use client';
 import { useAlert } from "@/context/AlertContext";
-import { getTokens } from "@/utils/auth";
 import axiosInstance from "@/utils/AxiosInstance";
 
 interface BodyForm{
     billingPeriod: string,
     dueDate: string,
     note?: string,
-    occupantId: number
+    occupantId: number,
 }
 
 interface ErrorResponse {
@@ -21,7 +20,6 @@ interface ErrorResponse {
 
 const useBillService = () =>{
     const { showAlert } = useAlert()
-    const { accessToken } = getTokens()
 
     const handleError = (error: unknown) =>{
         const typedError = error as ErrorResponse;
@@ -54,11 +52,7 @@ const useBillService = () =>{
 
     const getAllBills = async(page: string | number, limit: string | number) => {
         try {
-            const response = await axiosInstance.get(`bills?page=${page}&limit=${limit}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.get(`bills?page=${page}&limit=${limit}`)
             return response
         } catch (error) {
             handleError(error)
@@ -67,11 +61,16 @@ const useBillService = () =>{
     
     const getBillById = async(id: number) => {
         try {
-            const response = await axiosInstance.get(`bills/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.get(`bills/${id}`)
+            return response
+        } catch (error) {
+            handleError(error)
+        }
+    }
+
+    const getBillsSelection = async(billNumber: string) => {
+        try {
+            const response = await axiosInstance.get(`bills/selection?billNumber=${billNumber}`)
             return response
         } catch (error) {
             handleError(error)
@@ -80,11 +79,7 @@ const useBillService = () =>{
 
     const createBill = async(body: BodyForm) => {
         try {
-            const response = await axiosInstance.post('bills', body, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.post('bills', body)
             return response
         } catch (error: unknown) { 
             handleError(error)
@@ -93,11 +88,7 @@ const useBillService = () =>{
 
     const updateBillById = async(id: number, body: Partial<BodyForm>) => {
         try {
-            const response = await axiosInstance.patch(`bills/${id}`, body, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.patch(`bills/${id}`, body)
             return response
         } catch (error) {
             handleError(error)
@@ -106,11 +97,7 @@ const useBillService = () =>{
 
     const deleteBillById = async(id: number) => {
         try {
-            const response = await axiosInstance.delete(`bills/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
+            const response = await axiosInstance.delete(`bills/${id}`)
             return response
         } catch (error) {
             handleError(error)
@@ -120,6 +107,7 @@ const useBillService = () =>{
     return{
         getAllBills,
         getBillById,
+        getBillsSelection,
         createBill,
         updateBillById,
         deleteBillById

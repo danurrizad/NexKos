@@ -3,13 +3,14 @@ import { useAlert } from "@/context/AlertContext";
 import axiosInstance from "@/utils/AxiosInstance";
 
 interface BodyForm{
-    roomNumber: number | null,
-    status: string,
-    price: number | null,
-    capacity: number | null,
-    floor: number | null,
-    description: string,
-    facilityIds: number[]
+  billId: number,
+  amountPaid: string,
+  paymentDate: string,
+  paymentMethod: string,
+  gatewayName: string,
+  note: string,
+  paymentProof: File | null,
+  transactionReference: string
 }
 
 interface ErrorResponse {
@@ -21,7 +22,7 @@ interface ErrorResponse {
     message?: string;
   }
 
-const useRoomService = () =>{
+const usePaymentService = () =>{
     const { showAlert } = useAlert()
 
     const handleError = (error: unknown) =>{
@@ -53,45 +54,45 @@ const useRoomService = () =>{
         throw error
     }
 
-    const getAllRooms = async(page: string | number, limit: string | number) => {
+    const getAllPayments = async(page: string | number, limit: string | number) => {
         try {
-            const response = await axiosInstance.get(`rooms?page=${page}&limit=${limit}`)
+            const response = await axiosInstance.get(`payments?page=${page}&limit=${limit}`)
+            return response
+        } catch (error) {
+            handleError(error)
+        }
+    }
+    
+    const getPaymentById = async(id: number | null) => {
+        try {
+            const response = await axiosInstance.get(`payments/${id}`)
             return response
         } catch (error) {
             handleError(error)
         }
     }
 
-    const getSelectionRooms = async() => {
+    const createPayment = async(body: FormData) => {
         try {
-            const response = await axiosInstance.get(`rooms/selection`)
-            return response
-        } catch (error) {
-            handleError(error)
-        }
-    }
-
-    const createRoom = async(body: BodyForm) => {
-        try {
-            const response = await axiosInstance.post('rooms', body)
+            const response = await axiosInstance.post('payments', body)
             return response
         } catch (error: unknown) { 
             handleError(error)
         }
     }
 
-    const updateRoomById = async(id: number, body: BodyForm) => {
+    const updatePaymentById = async(id: number | null, body: Partial<BodyForm>) => {
         try {
-            const response = await axiosInstance.patch(`rooms/${id}`, body)
+            const response = await axiosInstance.patch(`payments/${id}`, body)
             return response
         } catch (error) {
             handleError(error)
         }
     }
 
-    const deleteRoomById = async(id: number) => {
+    const deletePaymentById = async(id: number | null) => {
         try {
-            const response = await axiosInstance.delete(`rooms/${id}`)
+            const response = await axiosInstance.delete(`payments/${id}`)
             return response
         } catch (error) {
             handleError(error)
@@ -99,12 +100,12 @@ const useRoomService = () =>{
     }
 
     return{
-        getAllRooms,
-        getSelectionRooms,
-        createRoom,
-        updateRoomById,
-        deleteRoomById
+        getAllPayments,
+        getPaymentById,
+        createPayment,
+        updatePaymentById,
+        deletePaymentById
     }
 }
 
-export default useRoomService
+export default usePaymentService

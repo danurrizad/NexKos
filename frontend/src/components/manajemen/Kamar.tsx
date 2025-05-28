@@ -24,7 +24,6 @@ import { useAlert } from "@/context/AlertContext";
 import Spinner from "../ui/spinner/Spinner";
 import Pagination from "../tables/Pagination";
 import LoadingTable from "../tables/LoadingTable";
-import LimitPerPage from "../tables/LimitPerPage";
 import useFacilityService from "@/services/FacilityService";
 import MultiSelect from "../form/MultiSelect";
 import IconDisplay from "../ui/icon/IconDisplay";
@@ -129,14 +128,12 @@ export default function Kamar() {
   const fetchRooms = async() => {
     try {
       const response = await getAllRooms(pagination.currentPage, pagination.limitPerPage)
-      console.log("response kamar: ", response)
       setRoomsData(response?.data.data)
       setPagination({
         currentPage: response?.data.meta.page,
         limitPerPage: response?.data.meta.limit,
         totalPage: response?.data.meta.totalPages,
       })
-      // console.log("response room get: ", response)
     } catch (error) {
       console.error(error)
     } 
@@ -161,7 +158,6 @@ export default function Kamar() {
 
   useEffect(()=>{
     fetchRooms()
-    console.log(pagination)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.currentPage, pagination.limitPerPage])
 
@@ -435,10 +431,11 @@ export default function Kamar() {
             <Table>
               {/* Table Header */}
               <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-                <TableRow>
+                <TableRow className="bg-">
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 w-[10px]"
+                    
                   >
                     No
                   </TableCell>
@@ -555,22 +552,19 @@ export default function Kamar() {
                 </div>
               )}
           </div>
-          <div className="flex justify-center gap-5">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPage}
-              onPageChange={(e)=>{
-                setPagination({...pagination, currentPage: e})
-              }}
-            />
-            <LimitPerPage
-              onChangeLimit={(e)=>{
-                setPagination({ ...pagination, limitPerPage: e, currentPage: 1})
-              }}
-              limit={pagination.limitPerPage}
-              options={[10, 25, 50]}
-            />
-          </div>
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPage}
+            onPageChange={(e)=>{
+              setPagination({...pagination, currentPage: e})
+            }}
+            showLimit
+            onLimitChange={(e)=>{
+              setPagination({ ...pagination, limitPerPage: e, currentPage: 1})
+            }}
+            limitPerPage={pagination.limitPerPage}
+            options={[10, 25, 50]}
+          />
         </CardBody>
       </Card>
     </div>
