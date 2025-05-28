@@ -13,7 +13,7 @@ export interface TokenResponse {
 }
 
 export interface RefreshTokenDto {
-  refresh_token: string;
+  token: string;
 }
 
 export interface LogoutResponse {

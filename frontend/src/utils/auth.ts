@@ -49,7 +49,7 @@ export const refreshAccessToken = async () => {
   }
 
   try {
-    const response = await axiosInstance.post(`auth/refresh-token`, {
+    const response = await axiosInstance.post(`auth/refresh`, {
       token: refreshToken,
     });
 
