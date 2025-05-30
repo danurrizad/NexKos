@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import Button from "../ui/button/Button";
-import { logout } from "@/utils/auth";
 import { useAlert } from "@/context/AlertContext";
 import { useRouter } from "next/navigation";
+import { logout } from "@/utils/auth"; 
 import useAuth from "@/utils/auth";
 import { UserIcon } from "@/icons";
 
@@ -22,7 +22,6 @@ export default function UserDropdown() {
   const { showAlert } = useAlert()
   const router = useRouter()
   const { user } = useAuth()
-
 function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
   e.stopPropagation();
   setIsOpen((prev) => !prev);
@@ -36,11 +35,11 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     try {
       setLoading(true)
       const response = await logout()
-      if(response){
+      if(response){   
         showAlert({
           variant: "success",
           title: "Sukses",
-          message: response?.data?.data?.message,
+          message: "Berhasil logout",
         })
       }
     } catch (error: unknown) {
