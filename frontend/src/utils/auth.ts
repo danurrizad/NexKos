@@ -22,8 +22,6 @@ export const getTokens = () => {
   if (typeof window !== 'undefined') {
     const accessToken = localStorage.getItem('access_token');
     const refreshToken = localStorage.getItem('refresh_token');
-    console.log('Access Token:', accessToken);
-    console.log('Refresh Token:', refreshToken);
     return { accessToken, refreshToken };
   }
   return { accessToken: null, refreshToken: null };
@@ -115,12 +113,11 @@ const performRefresh = async (refreshToken: string): Promise<string> => {
 export const logout = async () => {
   try {
     const { accessToken } = getTokens();
-    if (accessToken && !isTokenExpired(accessToken)) {
+    if (accessToken) {
       try {
-        const decoded = jwtDecode<DecodedInterface>(accessToken);
         const response = await axiosInstance.post(
           `auth/logout`,
-          { userId: decoded.sub },
+          {},
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,

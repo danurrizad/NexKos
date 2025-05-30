@@ -51,7 +51,6 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
       })
     } finally{
       setLoading(false)
-      router.push("/login")
     }
   }
 
