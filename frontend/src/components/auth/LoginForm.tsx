@@ -5,8 +5,8 @@ import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import useAuthService from "@/services/AuthService";
 import Link from "next/link";
-import React, { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { FormEvent, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAlert } from "@/context/AlertContext";
 import Spinner from "../ui/spinner/Spinner";
 
@@ -27,6 +27,18 @@ export default function LoginForm() {
   const [errorPass, setErrorPass] = useState<boolean>(false)
   const { login } = useAuthService()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (error) {
+      showAlert({
+        variant: "error",
+        title: "Error!",
+        message: decodeURIComponent(error),
+      })
+    }
+  }, [searchParams])
 
   const handleSubmitLogin = async(e: FormEvent) => {
     try {

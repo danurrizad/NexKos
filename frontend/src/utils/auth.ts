@@ -62,7 +62,7 @@ export const refreshAccessToken = async (): Promise<string> => {
   if (!refreshToken || refreshToken === 'undefined' || refreshToken === 'null') {
     console.log('No refresh token available');
     clearTokens();
-    window.location.href = '/login';
+    window.location.href = '/login?error=No refresh token available';
     throw new Error('No refresh token available');
   }
 
@@ -75,7 +75,8 @@ export const refreshAccessToken = async (): Promise<string> => {
   } catch (error) {
     console.error('Refresh failed:', error);
     clearTokens();
-    window.location.href = '/login';
+    const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+    window.location.href = `/login?error=${encodeURIComponent(errorMessage)}`;
     throw error;
   } finally {
     isRefreshing = false;
@@ -169,7 +170,8 @@ axiosInstance.interceptors.response.use(
       // If this is a refresh token request that failed, redirect immediately
       if (originalRequest.url?.includes('auth/refresh')) {
         clearTokens();
-        window.location.href = '/login';
+        const errorMessage = error.response?.data?.message || 'Session expired';
+        window.location.href = `/login?error=${encodeURIComponent(errorMessage)}`;
         return Promise.reject(error);
       }
 
@@ -183,13 +185,15 @@ axiosInstance.interceptors.response.use(
         } catch (refreshError: any) {
           // If refresh fails, redirect immediately
           clearTokens();
-          window.location.href = '/login';
+          const errorMessage = refreshError.response?.data?.message || 'Authentication failed';
+          window.location.href = `/login?error=${encodeURIComponent(errorMessage)}`;
           return Promise.reject(refreshError);
         }
       } else {
         // If we've already tried to refresh and still getting 401, redirect
         clearTokens();
-        window.location.href = '/login';
+        const errorMessage = error.response?.data?.message || 'Session expired';
+        window.location.href = `/login?error=${encodeURIComponent(errorMessage)}`;
         return Promise.reject(error);
       }
     }
