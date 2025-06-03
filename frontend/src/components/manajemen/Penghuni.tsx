@@ -374,7 +374,7 @@ export default function Penghuni() {
             <CardHeader>{type==="add" ? "Tambah" : "Ubah"} Penghuni</CardHeader>
             <CardBody>
                <div className="mb-4">
-                <Label>Nama<span className="text-red-500">*</span></Label>
+                <Label required>Nama</Label>
                 <Input
                   defaultValue={form?.name}
                   onChange={(e)=>{
@@ -386,7 +386,7 @@ export default function Penghuni() {
                 { formErrors?.name && <Label className="text-red-500 font-light">{formErrors.name}</Label>}
               </div>
               <div className="mb-4">
-                <Label>No Kamar<span className="text-red-500">*</span></Label>
+                <Label required>No Kamar</Label>
                 <Select
                   placeholder="Pilih kamar"
                   options={optionsRoom}
@@ -410,7 +410,7 @@ export default function Penghuni() {
                     defaultChecked={form.isPrimary}
                   />
                   <div className={`flex gap-4 items-center grow  ${form.isPrimary ? "relative" : "hidden"}`}>
-                    <Label className="shrink-0">Email Pembayar<span className="text-red-500">*</span></Label>
+                    <Label className="shrink-0">Email Pembayar</Label>
                     <div className="w-full">
                       <Input
                         placeholder="Masukkan email akun penghuni"
@@ -430,7 +430,7 @@ export default function Penghuni() {
                 </div>
               </div>
               <div className="mb-4">
-                <Label>NIK<span className="text-red-500">*</span></Label>
+                <Label required>NIK</Label>
                 <Input
                   defaultValue={form?.nik?.toString()}
                   onChange={(e)=>{
@@ -442,7 +442,7 @@ export default function Penghuni() {
                 { formErrors?.nik && <Label className="text-red-500 font-light">{formErrors.nik}</Label>}
               </div>
               <div className="mb-4">
-                <Label>Gender<span className="text-red-500">*</span></Label>
+                <Label required>Gender</Label>
                 <Select
                   placeholder="Pilih gender"
                   options={optionsGender}
@@ -456,7 +456,7 @@ export default function Penghuni() {
                 { formErrors?.gender && <Label className="text-red-500 font-light">{formErrors.gender}</Label>}
               </div>
               <div className="mb-4">
-                <Label>No HP<span className="text-red-500">*</span></Label>
+                <Label required>No HP</Label>
                 <Input
                   defaultValue={form?.phone}
                   type="number"
@@ -469,7 +469,7 @@ export default function Penghuni() {
                 { formErrors?.phone && <Label className="text-red-500 font-light">{formErrors.phone}</Label>}
               </div>
               <div className="mb-4">
-                <Label htmlFor="tanggalMasuk">Tanggal Masuk<span className="text-red-500">*</span></Label>
+                <Label required htmlFor="tanggalMasuk">Tanggal Masuk</Label>
                 <DatePicker
                   id="tanggalMasuk"
                   mode="single"
