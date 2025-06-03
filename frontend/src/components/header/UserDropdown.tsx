@@ -4,7 +4,6 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import Button from "../ui/button/Button";
 import { useAlert } from "@/context/AlertContext";
-import { useRouter } from "next/navigation";
 import { logout } from "@/utils/auth"; 
 import useAuth from "@/utils/auth";
 import { UserIcon } from "@/icons";
@@ -20,7 +19,6 @@ export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(false)
   const { showAlert } = useAlert()
-  const router = useRouter()
   const { user } = useAuth()
 function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
   e.stopPropagation();
