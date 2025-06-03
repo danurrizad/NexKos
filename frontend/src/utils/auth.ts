@@ -12,8 +12,16 @@ interface DecodedInterface {
   iat: number;  // issued at
 }
 
+interface ErrorProps {
+  response: {
+    status: number
+    data: {
+      message: string
+    }
+  }
+}
+
 export const setTokens = (accessToken: string, refreshToken: string) => {
-  console.log('Setting tokens:', accessToken, refreshToken);
   localStorage.setItem('access_token', accessToken);
   localStorage.setItem('refresh_token', refreshToken);
 };
@@ -35,7 +43,6 @@ export const clearTokens = () => {
 export const isTokenExpired = (token: string): boolean => {
   try {
     const decoded = jwtDecode<DecodedInterface>(token);
-    console.log('Decoded:', decoded);
     // Buffer time untuk access token 2 detik
     const bufferTime = 2 * 1000; // 2 detik dalam milidetik
     return decoded.exp ? (decoded.exp * 1000) < (Date.now() + bufferTime) : true;
@@ -55,10 +62,8 @@ export const refreshAccessToken = async (): Promise<string> => {
   }
 
   const { refreshToken } = getTokens();
-  console.log('Refresh Token:', refreshToken);
 
   if (!refreshToken || refreshToken === 'undefined' || refreshToken === 'null') {
-    console.log('No refresh token available');
     clearTokens();
     window.location.href = '/login?error=No refresh token available';
     throw new Error('No refresh token available');
@@ -98,7 +103,8 @@ const performRefresh = async (refreshToken: string): Promise<string> => {
 
     setTokens(accessToken, newRefreshToken);
     return accessToken;
-  } catch (error: any) {
+  } catch (errorType: unknown) {
+    const error = errorType as ErrorProps
     console.error('Refresh token error:', error);
     
     // If refresh fails due to expired/invalid token, don't retry
@@ -179,7 +185,8 @@ axiosInstance.interceptors.response.use(
           const newAccessToken = await refreshAccessToken();
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return axiosInstance(originalRequest);
-        } catch (refreshError: any) {
+        } catch (errorType: unknown) {
+          const refreshError = errorType as ErrorProps
           // If refresh fails, redirect immediately
           clearTokens();
           const errorMessage = refreshError.response?.data?.message || 'Authentication failed';
@@ -227,7 +234,7 @@ const useAuth = () => {
           const newAccessToken = await refreshAccessToken();
           const newDecoded = jwtDecode<DecodedInterface>(newAccessToken);
           setDecodedUser(newDecoded);
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('Token refresh failed in useAuth:', error);
           setDecodedUser(null);
           clearTokens();
@@ -239,7 +246,7 @@ const useAuth = () => {
         const decoded = jwtDecode<DecodedInterface>(accessToken);
         setDecodedUser(decoded);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error in decodeToken:', error);
       setDecodedUser(null);
       clearTokens();

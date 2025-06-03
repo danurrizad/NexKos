@@ -1,59 +1,23 @@
 "use client";
-
-import useDashboardService from "@/services/DashboardService";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-
-interface Loadings {
-  metrics: boolean,
-  monthlyDeadline: boolean,
-  monthlySummary: boolean
+interface Queries {
+  period: string
 }
 interface MonthlySummaryProps {
-  loading: Loadings,
-  setLoading: Dispatch<SetStateAction<Loadings>>
+  monthlySummaryData: ResponseMonthlySummary,
+  query: Queries,
+  // setQuery: Dispatch<SetStateAction<Queries>>
 }
-interface ResponseProps{
+interface ResponseMonthlySummary{
   totalBillsCreated: number,
   totalPayers: number,
   totalPayments: number,
   totalUnpaidBills: number
 }
 
-export default function MonthlySummary({ loading, setLoading } : MonthlySummaryProps) {
-  const { getBillPaymentSummary } = useDashboardService()
-  const [monthlySummaryData, setMonthlySummaryData] = useState<ResponseProps>({
-    totalBillsCreated: 0,
-    totalPayers: 0,
-    totalPayments: 0,
-    totalUnpaidBills: 0
-  })
-  const [query] = useState({
-    period: new Date().toLocaleDateString('en-CA').slice(0, 7)
-  })
+export default function MonthlySummary({ monthlySummaryData, query } : MonthlySummaryProps) {
   const monthNow = new Date(query.period).toLocaleDateString('id-ID', {
     month: "long"
   })
-
-
-  const fetchMonthlySummary = async() => {
-    try {
-      setLoading({ ...loading, monthlySummary: true})
-      const response = await getBillPaymentSummary(query.period)
-      setMonthlySummaryData(response?.data?.data)
-    } catch (error) {
-      console.error(error)
-    } finally{
-      setLoading({ ...loading, monthlySummary: false})
-    }
-  }
-
-  useEffect(()=>{
-    fetchMonthlySummary()
-  }, [])
-
-  if(loading.monthlySummary){
-    return
-  }
 
   return (
     <div className="sticky top-24 rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
