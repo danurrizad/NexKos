@@ -101,7 +101,7 @@ const Select: React.FC<SelectProps> = ({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white text-sm shadow-lg dark:border-gray-700 dark:bg-gray-900">
+        <div className="absolute z-999 mt-1 w-full rounded-lg border border-gray-200 bg-white text-sm shadow-lg dark:border-gray-700 dark:bg-gray-900">
           {/* Search Input */}
           { showSearch && (
             <div className="px-4 py-2">

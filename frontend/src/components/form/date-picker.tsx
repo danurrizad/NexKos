@@ -44,7 +44,6 @@ export default function DatePicker({
     if (!inputRef.current) return;
 
     const isMonthMode = mode === 'month';
-
     const flatPickr = flatpickr(`#${id}`, {
       mode: isMonthMode ? "single" : mode || "single",
       // static: true,
@@ -54,6 +53,7 @@ export default function DatePicker({
       onChange,
       autoFillDefaultTime: false,
       // minDate: 'today',
+      disableMobile: true,
       position: 'above right',
       ...(isMonthMode && {
         plugins: [new MonthSelectPlugin({

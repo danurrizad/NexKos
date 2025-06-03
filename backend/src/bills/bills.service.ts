@@ -3,7 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, FindOptionsWhere } from 'typeorm';
 import { Bill } from './entities/bill.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateBillDto } from './dto/create-bill.dto';
@@ -16,6 +16,7 @@ import { RoomsService } from '../rooms/rooms.service';
 import { User } from '../users/entities/user.entity';
 import { BillStatus } from './enums/bill-status.enum';
 import { Occupant } from 'src/occupants/entities/occupant.entity';
+import { ILike } from 'typeorm';
 
 @Injectable()
 export class BillsService extends BaseService<Bill> {
@@ -96,10 +97,8 @@ export class BillsService extends BaseService<Bill> {
   //   }
   // }
 
-  private async generateBillNumber(): Promise<string> {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1; // getMonth() returns 0-11
+  private async generateBillNumber(billingPeriod: string): Promise<string> {
+    const [year, month] = billingPeriod.split('-').map(Number);
     const yearMonth = `${year}${month.toString().padStart(2, '0')}`;
 
     // Find the last bill number for current month, including soft-deleted ones
@@ -132,7 +131,7 @@ export class BillsService extends BaseService<Bill> {
 
     if (existingBill) {
       // If exists, increment sequence and try again
-      return this.generateBillNumber();
+      return this.generateBillNumber(billingPeriod);
     }
 
     return billNumber;
@@ -141,7 +140,9 @@ export class BillsService extends BaseService<Bill> {
   async create(createBillDto: CreateBillDto, user: User): Promise<Bill> {
     return this.executeInTransaction(async (queryRunner) => {
       // Generate bill number
-      const billNumber = await this.generateBillNumber();
+      const billNumber = await this.generateBillNumber(
+        createBillDto.billingPeriod,
+      );
 
       // Validate billing period
       this.validateBillingPeriod(createBillDto.billingPeriod);
@@ -185,7 +186,7 @@ export class BillsService extends BaseService<Bill> {
       order: {
         [orderBy]: order,
       },
-      relations: ['occupant', 'room', 'createdBy'],
+      relations: ['occupant', 'room', 'createdBy', 'payments'],
       select: {
         occupant: {
           id: true,
@@ -199,13 +200,27 @@ export class BillsService extends BaseService<Bill> {
           id: true,
           name: true,
         },
+        payments: {
+          amountPaid: true,
+          paymentDate: true,
+          paymentMethod: true,
+        },
       },
     });
+
+    // Calculate total amount paid for each bill
+    const billsWithTotalPaid = data.map((bill) => ({
+      ...bill,
+      totalPaid: bill.payments.reduce(
+        (sum, payment) => sum + Number(payment.amountPaid),
+        0,
+      ),
+    }));
 
     const totalPages = Math.ceil(total / limit);
 
     return {
-      data,
+      data: billsWithTotalPaid,
       meta: {
         total,
         page,
@@ -218,7 +233,14 @@ export class BillsService extends BaseService<Bill> {
   async findOne(id: number): Promise<Bill> {
     const bill = await this.billRepository.findOne({
       where: { id, isDeleted: false },
-      relations: ['occupant', 'room', 'createdBy'],
+      relations: ['occupant', 'room', 'createdBy', 'payments'],
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
     });
 
     if (!bill) {
@@ -352,5 +374,25 @@ export class BillsService extends BaseService<Bill> {
         totalPages,
       },
     };
+  }
+
+  async findAllForSelection(
+    billNumber?: string,
+  ): Promise<Pick<Bill, 'id' | 'billNumber' | 'billingPeriod' | 'status'>[]> {
+    const where: FindOptionsWhere<Bill> = {
+      isDeleted: false,
+    };
+
+    if (billNumber) {
+      where.billNumber = ILike(`%${billNumber}%`);
+    }
+
+    return this.billRepository.find({
+      select: ['id', 'billNumber', 'billingPeriod', 'status'],
+      where,
+      order: {
+        billNumber: 'ASC',
+      },
+    });
   }
 }

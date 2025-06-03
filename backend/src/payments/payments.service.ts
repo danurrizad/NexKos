@@ -145,11 +145,10 @@ export class PaymentsService extends BaseService<Payment> {
   ): Promise<Payment> {
     return this.executeInTransaction(async (queryRunner) => {
       const payment = await this.findOne(id);
-      const updatedPayment = {
-        ...payment,
-        ...updatePaymentDto,
-      };
-      return queryRunner.manager.save(updatedPayment);
+
+      Object.assign(payment, updatePaymentDto);
+
+      return queryRunner.manager.save(payment);
     });
   }
 

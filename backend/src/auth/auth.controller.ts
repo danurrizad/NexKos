@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  UseInterceptors,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/auth.register.dto';
 import { LoginDto } from './dto/auth.login.dto';
@@ -12,6 +20,7 @@ import {
   RequestWithUser,
   TokenResponse,
 } from './interfaces/auth.interface';
+import { User } from 'src/users/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -37,11 +46,11 @@ export class AuthController {
   refreshToken(
     @Body() refreshTokenDto: RefreshTokenDto,
   ): Promise<TokenResponse> {
-    return this.authService.refreshToken(refreshTokenDto.refresh_token);
+    return this.authService.refreshToken(refreshTokenDto.token);
   }
 
   @Post('logout')
-  async logout(@Req() req: RequestWithUser): Promise<LogoutResponse> {
-    return this.authService.logout(req.user.sub);
+  async logout(@Request() req: { user: User }): Promise<LogoutResponse> {
+    return this.authService.logout(req.user.id);
   }
 }

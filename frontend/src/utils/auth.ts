@@ -12,6 +12,15 @@ interface DecodedInterface {
   iat: number;  // issued at
 }
 
+interface ErrorProps {
+  response: {
+    status: number
+    data: {
+      message: string
+    }
+  }
+}
+
 export const setTokens = (accessToken: string, refreshToken: string) => {
   localStorage.setItem('access_token', accessToken);
   localStorage.setItem('refresh_token', refreshToken);
@@ -34,34 +43,75 @@ export const clearTokens = () => {
 export const isTokenExpired = (token: string): boolean => {
   try {
     const decoded = jwtDecode<DecodedInterface>(token);
-    return decoded.exp ? decoded.exp * 1000 < Date.now() : true;
+    // Buffer time untuk access token 2 detik
+    const bufferTime = 2 * 1000; // 2 detik dalam milidetik
+    return decoded.exp ? (decoded.exp * 1000) < (Date.now() + bufferTime) : true;
   } catch {
     return true;
   }
 };
 
-export const refreshAccessToken = async () => {
+
+let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
+
+export const refreshAccessToken = async (): Promise<string> => {
+  // Prevent multiple refresh requests
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
   const { refreshToken } = getTokens();
-  if (!refreshToken || refreshToken === 'undefined') {
+
+  if (!refreshToken || refreshToken === 'undefined' || refreshToken === 'null') {
     clearTokens();
-    window.location.href = '/login';
+    window.location.href = '/login?error=No refresh token available';
     throw new Error('No refresh token available');
   }
 
-  try {
-    const response = await axiosInstance.post(`auth/refresh-token`, {
-      token: refreshToken,
-    });
+  isRefreshing = true;
+  refreshPromise = performRefresh(refreshToken);
 
-    const { access_token, refresh_token } = response.data;
-    if (!access_token || !refresh_token) {
-      throw new Error('Invalid token response');
+  try {
+    const newAccessToken = await refreshPromise;
+    return newAccessToken;
+  } catch (error) {
+    console.error('Refresh failed:', error);
+    clearTokens();
+    const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+    window.location.href = `/login?error=${encodeURIComponent(errorMessage)}`;
+    throw error;
+  } finally {
+    isRefreshing = false;
+    refreshPromise = null;
+  }
+};
+
+const performRefresh = async (refreshToken: string): Promise<string> => {
+  try {
+    console.log('Attempting to refresh token...');
+    const response = await axiosInstance.post(`auth/refresh`, { token: refreshToken });
+    console.log('Refresh response:', response);
+
+    const accessToken = response.data?.data?.access_token
+    const newRefreshToken = response.data?.data?.refresh_token
+
+    if (!accessToken || !newRefreshToken) {
+      console.log('Invalid token response structure');
+      throw new Error('Invalid token response structure');
     }
 
-    setTokens(access_token, refresh_token);
-    return access_token;
-  } catch (error) {
-    clearTokens();
+    setTokens(accessToken, newRefreshToken);
+    return accessToken;
+  } catch (errorType: unknown) {
+    const error = errorType as ErrorProps
+    console.error('Refresh token error:', error);
+    
+    // If refresh fails due to expired/invalid token, don't retry
+    if (error.response?.status === 401) {
+      console.log('Refresh token invalid/expired on server');
+    }
+    
     throw error;
   }
 };
@@ -70,22 +120,27 @@ export const logout = async () => {
   try {
     const { accessToken } = getTokens();
     if (accessToken) {
-      const decoded = jwtDecode<DecodedInterface>(accessToken);
-      const response = await axiosInstance.post(
-        `auth/logout`,
-        { userId: decoded.sub },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      return response
+      try {
+        const response = await axiosInstance.post(
+          `auth/logout`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        return response;
+      } catch (logoutError) {
+        console.log('Error during server logout:', logoutError);
+        // Continue with local cleanup even if server logout fails
+      }
     }
   } catch (error) {
-    console.error('Logout error:', error);
+    console.log('Error logging out:', error);
   } finally {
     clearTokens();
+    window.location.href = '/login';
   }
 };
 
@@ -93,7 +148,7 @@ export const logout = async () => {
 axiosInstance.interceptors.request.use(
   (config) => {
     const { accessToken } = getTokens();
-    if (accessToken) {
+    if (accessToken && !isTokenExpired(accessToken)) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
@@ -109,37 +164,48 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Jika error bukan dari axios atau tidak ada config
     if (!error.config) {
       return Promise.reject(error);
     }
 
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const newAccessToken = await refreshAccessToken();
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
+    // Handle 401 Unauthorized - token expired
+    if (error.response?.status === 401) {
+      // If this is a refresh token request that failed, redirect immediately
+      if (originalRequest.url?.includes('auth/refresh')) {
         clearTokens();
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
+        const errorMessage = error.response?.data?.message || 'Session expired';
+        window.location.href = `/login?error=${encodeURIComponent(errorMessage)}`;
+        return Promise.reject(error);
+      }
+
+      // For other requests, try to refresh only if we haven't tried before
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
+        try {
+          const newAccessToken = await refreshAccessToken();
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return axiosInstance(originalRequest);
+        } catch (errorType: unknown) {
+          const refreshError = errorType as ErrorProps
+          // If refresh fails, redirect immediately
+          clearTokens();
+          const errorMessage = refreshError.response?.data?.message || 'Authentication failed';
+          window.location.href = `/login?error=${encodeURIComponent(errorMessage)}`;
+          return Promise.reject(refreshError);
         }
-        return Promise.reject(refreshError);
+      } else {
+        // If we've already tried to refresh and still getting 401, redirect
+        clearTokens();
+        const errorMessage = error.response?.data?.message || 'Session expired';
+        window.location.href = `/login?error=${encodeURIComponent(errorMessage)}`;
+        return Promise.reject(error);
       }
     }
 
-    // Handle 403 Forbidden
+    // Handle 403 Forbidden - insufficient permissions
     if (error.response?.status === 403) {
+      console.log('Access forbidden - insufficient permissions');
       window.location.href = '/unauthorized';
-      return Promise.reject(error);
-    }
-
-    // Handle network error
-    if (!error.response) {
-      console.error('Network Error:', error);
       return Promise.reject(error);
     }
 
@@ -154,24 +220,37 @@ const useAuth = () => {
   const decodeToken = async () => {
     try {
       const { accessToken } = getTokens();
-      if (accessToken) {
-        const decoded = jwtDecode<DecodedInterface>(accessToken);
-        
-        // Check if token is expired
-        if (isTokenExpired(accessToken)) {
+      if (!accessToken || accessToken === 'null' || accessToken === 'undefined') {
+        setDecodedUser(null);
+        setIsLoading(false);
+        window.location.href = '/login';
+        return;
+      }
+
+      // Check if token is expired
+      if (isTokenExpired(accessToken)) {
+        console.log('Access token expired, attempting refresh...');
+        try {
           const newAccessToken = await refreshAccessToken();
           const newDecoded = jwtDecode<DecodedInterface>(newAccessToken);
           setDecodedUser(newDecoded);
-        } else {
-          setDecodedUser(decoded);
+        } catch (error: unknown) {
+          console.error('Token refresh failed in useAuth:', error);
+          setDecodedUser(null);
+          clearTokens();
+          window.location.href = '/login';
+          return;
         }
       } else {
-        setDecodedUser(null);
+        // Token is still valid
+        const decoded = jwtDecode<DecodedInterface>(accessToken);
+        setDecodedUser(decoded);
       }
-    } catch (error) {
-      console.error('Token decode error:', error);
+    } catch (error: unknown) {
+      console.error('Error in decodeToken:', error);
       setDecodedUser(null);
       clearTokens();
+      window.location.href = '/login';
     } finally {
       setIsLoading(false);
     }
@@ -185,6 +264,7 @@ const useAuth = () => {
     user: decodedUser,
     isLoading,
     isAuthenticated: !!decodedUser,
+    refreshUser: decodeToken,
   };
 };
 

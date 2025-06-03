@@ -282,7 +282,7 @@ export default function Kamar() {
             <CardHeader>{ type==='add' ? "Tambah" : "Ubah"} Kamar</CardHeader>
             <CardBody>
                 <div className="mb-4">
-                  <Label>Nomor Kamar <span className="text-red-500">*</span></Label>
+                  <Label required>Nomor Kamar</Label>
                   <Input
                     defaultValue={form.roomNumber?.toString()}
                     onChange={(e)=>{
@@ -294,7 +294,7 @@ export default function Kamar() {
                   { formErrors?.roomNumber && <Label className="text-red-500 font-light">{formErrors.roomNumber}</Label>}
                 </div>
                 <div className="mb-4">
-                  <Label>Letak (lantai)<span className="text-red-500">*</span></Label>
+                  <Label required>Letak (lantai)</Label>
                   <Input 
                     onChange={(e)=>{
                       setFormErrors({...formErrors, floor: ""})
@@ -306,7 +306,7 @@ export default function Kamar() {
                   { formErrors?.floor && <Label className="text-red-500 font-light">{formErrors.floor}</Label>}
                 </div>
                 <div className="mb-4">
-                  <Label>Kapasitas<span className="text-red-500">*</span></Label>
+                  <Label required>Kapasitas</Label>
                   <Input
                     defaultValue={form.capacity?.toString()}
                     onChange={(e)=>{
@@ -318,7 +318,7 @@ export default function Kamar() {
                   { formErrors?.capacity && <Label className="text-red-500 font-light">{formErrors.capacity}</Label>}
                 </div>
                 <div className="mb-4">
-                  <Label>Harga<span className="text-red-500">*</span></Label>
+                  <Label required>Harga</Label>
                   <Input
                     defaultValue={form.price?.toString()}
                     onChange={(e)=>{
@@ -352,7 +352,7 @@ export default function Kamar() {
                 </div>
                 { type==="update" && (
                   <div className="mb-4">
-                    <Label>Status<span className="text-red-500">*</span></Label>
+                    <Label>Status</Label>
                     <Select 
                       placeholder="Pilih status"
                       options={optionsStatus} 

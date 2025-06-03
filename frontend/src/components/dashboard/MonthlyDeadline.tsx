@@ -10,67 +10,45 @@ import  Button from '../ui/button/Button'
 
 import { OutgoingMailIcon } from '@/icons'
 import Badge from '../ui/badge/Badge';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import useDashboardService from '@/services/DashboardService';
+import { Dispatch, SetStateAction } from 'react';
+import Pagination from '../tables/Pagination';
+import LoadingTable from '../tables/LoadingTable';
 
-interface Loadings {
-  metrics: boolean,
-  monthlyDeadline: boolean,
-  monthlySummary: boolean
+interface Paginations {
+  currentPage: number,
+  limitPerPage: number,
+  totalPage: number
 }
 
-interface MonthlyDeadlineProps {
-  loading: Loadings,
-  setLoading: Dispatch<SetStateAction<Loadings>>
-}
-
-interface ResponseProps{
+interface ResponseMonthlyDeadline{
   room: {
     roomNumber: string
   },
   occupant: {
-    name: string
+    name: string,
+    phone: string,
   },
   dueDate: string,
-  status: string
+  status: string,
+  totalAmount: string
 }
 
-export default function MonthlyDeadline({ loading, setLoading } : MonthlyDeadlineProps) {  
-  const { getBillRecent } = useDashboardService()
-  const [monthlyDeadlineData, setMonthlyDeadlineData] = useState<ResponseProps[]>([])
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPage: 0,
-    limit: 10
-  })
+interface MonthlyDeadlineProps {
+  monthlyDeadlineData: ResponseMonthlyDeadline[],
+  pagination: Paginations,
+  setPagination: Dispatch<SetStateAction<Paginations>>,
+  loading: boolean
+}
 
-  const fetchMonthlyDeadline = async() => {
-    try {
-      setLoading({ ...loading, monthlyDeadline: true})
-      const response = await getBillRecent(pagination.currentPage, pagination.limit)
-      console.log("response deadlines bill", response)
-      setMonthlyDeadlineData(response?.data?.data)
-      setPagination({
-        currentPage: response?.data?.meta?.page,
-        totalPage: response?.data?.meta?.totalPages,
-        limit: response?.data?.meta?.limit,
-      })
-    } catch (error) {
-      console.error(error)
-    } finally{
-      setLoading({ ...loading, monthlyDeadline: false})
-    }
-  }
-
-  useEffect(()=>{
-    fetchMonthlyDeadline()
-  }, [])
-
-  if(loading.monthlyDeadline){
-    return
-  }
-
+export default function MonthlyDeadline({ monthlyDeadlineData, pagination, setPagination, loading } : MonthlyDeadlineProps) {  
   
+  const handleSendReminder = (localPhone: string, occupantName: string, dueDate: string, amount: number) => {
+    const internationalPhone = '62' + localPhone.replace(/^0/, '');
+    const message = `Halo ${occupantName}, ini adalah pengingat untuk pembayaran kos Anda. Mohon melakukan pembayaran sebesar Rp${amount.toLocaleString('id-ID')} sebelum hari ${new Date(dueDate).toLocaleDateString('id-ID', { dateStyle: 'full'})}. Terima kasih.`;
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${internationalPhone}?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
+  };
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -122,7 +100,7 @@ export default function MonthlyDeadline({ loading, setLoading } : MonthlyDeadlin
               </TableRow>
             </TableHeader>
             <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
-              { monthlyDeadlineData?.map((data: ResponseProps, index: number)=>{
+              { (monthlyDeadlineData.length > 0 && !loading) && monthlyDeadlineData?.map((data: ResponseMonthlyDeadline, index: number)=>{
                 return(
                   <TableRow key={index}>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{index+1}</TableCell>
@@ -134,13 +112,13 @@ export default function MonthlyDeadline({ loading, setLoading } : MonthlyDeadlin
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.occupant.name}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.dueDate}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
-                      <Badge color={data.status==='lunas' ? 'success' : 'error'}>
+                      <Badge color={data.status==='lunas' ? 'success' : data.status === 'dibayar sebagian' ? 'warning' : 'error'}>
                         {data?.status.toUpperCase()}
                       </Badge>
                     </TableCell>
                     
                     <TableCell className="px-5 py-4 sm:px-6 text-center text-theme-sm">
-                      <Button disabled={data.status === 'lunas'} size='sm' className={`bg-white ${data.status !== 'lunas' && 'hover:bg-primary1'} shadow-md group`}>
+                      <Button onClick={()=>handleSendReminder(data.occupant.phone, data.occupant.name, data.dueDate, Number(data.totalAmount))} disabled={data.status === 'lunas'} size='sm' className={`bg-white ${data.status !== 'lunas' && 'hover:bg-primary1'} shadow-md group`}>
                         <OutgoingMailIcon className={`text-primary1 ${data.status !== "lunas" && "group-hover:text-white"}`}/>
                       </Button>
                     </TableCell>
@@ -150,6 +128,29 @@ export default function MonthlyDeadline({ loading, setLoading } : MonthlyDeadlin
             </TableBody>
           </Table>
         </div>
+          { loading && (
+            <div className="py-10 text-center flex w-full text-gray-400">
+              <LoadingTable/>
+            </div>
+          )}
+          { (monthlyDeadlineData.length === 0 && !loading) && (
+            <div className="py-10 text-center flex justify-center text-gray-400 w-full">
+              Data jatuh tempo pembayaran tidak ditemukan
+            </div>
+          )}
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPage}
+            onPageChange={(e)=>{
+              setPagination({...pagination, currentPage: e})
+            }}
+            showLimit
+            onLimitChange={(e)=>{
+              setPagination({ ...pagination, limitPerPage: e, currentPage: 1})
+            }}
+            limitPerPage={pagination.limitPerPage}
+            options={[10, 25, 50]}
+          />
       </div>
     </div>
   );

@@ -13,8 +13,7 @@ import{
   TableBody
 } from '@/components/ui/table'
 import Button from "@/components/ui/button/Button";
-import { CheckIcon, ScheduleIcon, ErrorCircleIcon, FileIcon, CurrencyExchangeIcon, DevicesIcon, AppRegistrationIcon, DeleteIcon, ReceiptShortIcon } from "@/icons";
-import Badge from "@/components/ui/badge/Badge";
+import { CheckIcon, ScheduleIcon, ErrorCircleIcon, AppRegistrationIcon, DeleteIcon, ReceiptShortIcon } from "@/icons";
 import useBillService from "@/services/BillService";
 import LoadingTable from "../tables/LoadingTable";
 import { Modal } from "../ui/modal";
@@ -26,9 +25,9 @@ import useOccupantService from "@/services/OccupantService";
 import Select from "../form/Select";
 import { useAlert } from "@/context/AlertContext";
 import Pagination from "../tables/Pagination";
-import InputImg from "../form/input/InputImg";
-import usePaymentService from "@/services/PaymentService";
-
+import { useRouter } from "next/navigation";
+import { useWindowSize } from "@/hooks/useWindowSize";
+import Badge from "../ui/badge/Badge";
 interface ResponseBills{
   id: number,
   billNumber: string,
@@ -44,7 +43,8 @@ interface ResponseBills{
   },
   status: string,
   totalAmount: string,
-  paymentMethod: string
+  paymentMethod: string,
+  totalPaid: string
 }
 interface FormBody{
   id?:number,
@@ -76,13 +76,6 @@ interface FormErrors{
   dueDate: string,
   occupantRoom: string
 }
-interface FormPaymentErrors{
-  amountPaid: string,
-  paymentMethod: string,
-  paymentProof: string,
-  transactionReference: string
-}
-
 interface SelectionOccupantRoom{
   name: string,
   id: number,
@@ -99,11 +92,14 @@ interface OptionsOccupant{
 }
 
 export default function Tagihan() {
+  const { width } = useWindowSize()
+  const isMobile = width !== undefined && width < 768;
   const [loading, setLoading] = useState({
     fetch: false,
     submit: false,
     fetchOptions: false
   })
+  const router = useRouter()
   const { showAlert } = useAlert()
   const [billsData, setBillsData] = useState([])
   const [billId, setBillId] = useState<number>(0)
@@ -113,7 +109,6 @@ export default function Tagihan() {
     limit: 10
   })
   const { getAllBills, createBill, updateBillById, deleteBillById } = useBillService()
-  const { createPayment } = usePaymentService()
   const { getSelectionsOccupants} = useOccupantService()
   const [optionsOccupant, setOptionsOccupant] = useState<OptionsOccupant[]>([])
   const [showModal, setShowModal] = useState({
@@ -150,20 +145,6 @@ export default function Tagihan() {
     dueDate: "",
     occupantRoom: ""
   })
-  const [formPaymentErrors, setFormPaymentErrors] = useState<FormPaymentErrors>({
-    amountPaid: "",
-    paymentMethod: "",
-    paymentProof: "",
-    transactionReference: ""
-  })
-  const optionsPaymentMethods = [
-    { value: 'tunai', label: 'Tunai'},
-    { value: 'transfer', label: 'Transfer'},
-    { value: 'qris', label: 'QRIS'},
-    { value: 'ovo', label: 'OVO'},
-    { value: 'dana', label: 'Dana'}
-  ]
-  // const [previewImage, setPreviewImage] = useState<string>("")
 
   const fetchBills = async() => {
     try {
@@ -355,59 +336,6 @@ export default function Tagihan() {
     }
   }
 
-  const handleSubmitPayment = async() => {
-    try {
-      setLoading({ ...loading, submit: true})
-      console.log("form payment: ", formPayment)
-      const errors: FormPaymentErrors = {
-        amountPaid: "",
-        paymentMethod: "",
-        paymentProof: "",
-        transactionReference: "",
-      };
-      if (!formPayment.amountPaid) errors.amountPaid = "Jumlah pembayaran wajib diisi.";
-      if (!formPayment.paymentMethod) errors.paymentMethod = "Metode pembayaran wajib dipilih.";
-      if (!formPayment.paymentProof) errors.paymentProof = "Bukti pembayaran wajib diisi.";
-      if (!formPayment.transactionReference) errors.transactionReference = "Nomor referensi pembayaran wajib diisi.";
-
-      // Check if any error message exists
-      const hasErrors = Object.values(errors).some((msg) => msg !== "");
-
-      if (hasErrors) {
-        setFormPaymentErrors(errors);
-        return;
-      }
-       const formData = new FormData();
-
-      formData.append("billId", String(formPayment.billId));
-      formData.append("paymentDate", formPayment.paymentDate);
-      formData.append("amountPaid", formPayment.amountPaid);
-      formData.append("paymentMethod", formPayment.paymentMethod);
-      formData.append("gatewayName", formPayment.gatewayName);
-      formData.append("note", formPayment.note);
-      formData.append("transactionReference", formPayment.transactionReference);
-
-      if (formPayment.paymentProof) {
-        formData.append("paymentProof", formPayment.paymentProof); // ⬅️ File goes here
-      }else{
-        formData.append("paymentProof", ""); // ⬅️ File goes here
-      }
-
-      const response = await createPayment(formData)
-      showAlert({
-        variant: "success",
-        title: "Sukses",
-        message: response?.data.message
-      })
-      setShowModal({ ...showModal, type: "", detail: false})
-      fetchBills()
-    } catch (error) {
-      console.error(error)
-    } finally{
-      setLoading({ ...loading, submit: false})
-    }
-  }
-
   const renderModal = (type: string) => {
     if(type==='add' || type==='update'){
       return(
@@ -419,7 +347,7 @@ export default function Tagihan() {
             <CardHeader>{type==='add' ? 'Tambah' : 'Ubah'} Tagihan</CardHeader>
             <CardBody>
               <div className="mb-4">
-                <Label>Kamar dan Penghuni <span className="text-red-500">*</span></Label>
+                <Label required={type==='add'}>Kamar dan Penghuni</Label>
                 <Select
                   options={optionsOccupant}
                   onChange={handleChangeSelectOccupantRoom}
@@ -434,7 +362,7 @@ export default function Tagihan() {
               </div>
               <div>
                 <div className="mb-4">
-                  <Label>Periode Tagihan <span className="text-red-500">*</span></Label>
+                  <Label required={type==='add'}>Periode Tagihan</Label>
                   <DatePicker
                     id="periodeTagihan"
                     dateFormat="Y-m"
@@ -448,7 +376,7 @@ export default function Tagihan() {
                   { formErrors?.billingPeriod && <Label className="text-red-500 font-light">{formErrors.billingPeriod}</Label>}
                 </div>
                 <div className="mb-4">
-                  <Label>Jatuh Tempo<span className="text-red-500">*</span></Label>
+                  <Label required>Jatuh Tempo</Label>
                   <DatePicker
                     id="jatuhTempo"
                     error={formErrors.dueDate !== ""}
@@ -510,121 +438,7 @@ export default function Tagihan() {
           </Card>
         </Modal>
       )
-    }else if(type==='detail'){
-      return(
-        <Modal
-          parentClass="md:px-40 px-10 "
-          isOpen={showModal.detail}
-          onClose={()=>handleCloseModal(type)}
-          className="w-full lg:w-100"
-        >
-          <Card>
-            <CardHeader>Bayar Tagihan</CardHeader>
-            <CardBody>
-               <div className="mb-4">
-                <Label>Nomor Tagihan<span className="text-red-500">*</span></Label>
-                <Input
-                  disabled
-                  defaultValue={form.billNumber}
-                />
-              </div>
-              <div className="mb-4">
-                <Label>Jumlah yang Dibayarkan<span className="text-red-500">*</span></Label>
-                <Input
-                  value={formPayment.amountPaid}
-                  onChange={(e)=>{
-                    setFormPaymentErrors({ ...formPaymentErrors, amountPaid: ""})
-                    setFormPayment({ ...formPayment, amountPaid: e.target.value})
-                  }}
-                  error={formPaymentErrors.amountPaid !== ""}
-                />
-                { formPaymentErrors?.amountPaid && <Label className="text-red-500 font-light">{formPaymentErrors.amountPaid}</Label>}
-              </div>
-              <div className="mb-4">
-                <Label>Metode Pembayaran<span className="text-red-500">*</span></Label>
-                <Select
-                  options={optionsPaymentMethods}
-                  defaultValue={optionsPaymentMethods.find(opt=>opt.value === formPayment.paymentMethod)?.value}
-                  onChange={(val)=>{
-                    setFormPaymentErrors({ ...formPaymentErrors, paymentMethod: ""})
-                    setFormPayment({ ...formPayment, paymentMethod: val})
-                  }}
-                  error={formPaymentErrors.paymentMethod !== ""}
-                />
-                { formPaymentErrors?.paymentMethod && <Label className="text-red-500 font-light">{formPaymentErrors.paymentMethod}</Label>}
-              </div>
-              <div className="mb-4">
-                <Label>Nama Gateway</Label>
-                <Input
-                  value={formPayment.gatewayName}
-                  onChange={(e)=>setFormPayment({ ...formPayment, gatewayName: e.target.value})}
-                />
-              </div>
-              <div className="mb-4">
-                <Label>Catatan</Label>
-                <Input
-                  value={formPayment.note}
-                  onChange={(e)=>setFormPayment({ ...formPayment, note: e.target.value})}
-                />
-              </div>
-              <div className="mb-4">
-                <Label>Bukti Pembayaran<span className="text-red-500">*</span></Label>
-                <InputImg
-                  type="file"
-                  onChange={(e)=>{
-                      setFormPaymentErrors({ ...formPaymentErrors, paymentProof: ""})
-                      setFormPayment({ ...formPayment, paymentProof: e?.target?.files?.[0] || null})
-                  }}
-                  // initialPreviewUrl={previewImage ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${previewImage}` : undefined}
-                  error={formPaymentErrors.paymentProof !== ""}
-                />
-                { formPaymentErrors?.paymentProof && <Label className="text-red-500 font-light">{formPaymentErrors.paymentProof}</Label>}
-              </div>
-              <div className="mb-4">
-                <Label>Nomor Referensi<span className="text-red-500">*</span></Label>
-                <Input
-                  type="text"
-                  placeholder="Nomor referensi yang ada di bukti pembayaran"
-                  value={formPayment.transactionReference}
-                  onChange={(e)=>{
-                    setFormPaymentErrors({ ...formPaymentErrors, transactionReference: ""})
-                    setFormPayment({ ...formPayment, transactionReference: e.target.value})
-                  }}
-                  error={formPaymentErrors.transactionReference !== ""}
-                />
-                { formPaymentErrors?.transactionReference && <Label className="text-red-500 font-light">{formPaymentErrors.transactionReference}</Label>}
-              </div>
-            </CardBody>
-             <CardBody>
-              <div className="flex justify-end gap-4">
-                <Button type="button" onClick={()=>handleCloseModal(type)} className="border-1 py-2 px-5 bg-gray-400 text-white hover:bg-gray-600">Kembali</Button>
-                <Button 
-                  type="button" 
-                  disabled={loading.submit} 
-                  onClick={handleSubmitPayment} 
-                  className="border-1 py-2 px-5 bg-green-500 text-white hover:bg-green-700"
-                >
-                    { loading.submit && <Spinner/> }
-                    Bayar Tagihan
-                </Button>
-              </div>
-            </CardBody>
-          </Card>
-        </Modal>
-      )
     }
-  }
-
-  const renderPaymentMethodBody = (paymentMethod: string) => {
-    if(!paymentMethod) return
-    return(
-      <Badge 
-        color={paymentMethod==='gateway' ? "info" : paymentMethod==='transfer' ? "success" : paymentMethod==='manual' ? 'warning' : "light"} 
-        startIcon={paymentMethod==='manual' ? <FileIcon/> : paymentMethod==='transfer' ? <CurrencyExchangeIcon/> : paymentMethod==='gateway' ? <DevicesIcon/> : ""} 
-      >
-        {paymentMethod}
-      </Badge>
-    )
   }
 
   const renderBillPeriodBody = (data: string) => {
@@ -646,6 +460,14 @@ export default function Tagihan() {
     )
   }
 
+  const renderLongStatus = (status: string) => {
+    return(
+      <Badge color={status === 'lunas' ? 'success' : status === 'dibayar sebagian' ? 'warning' : 'error'}>
+        {status.toUpperCase()}
+      </Badge>
+    )
+  }
+
   return (
     <div className="">
       {renderModal(showModal.type)}
@@ -656,126 +478,188 @@ export default function Tagihan() {
           </Button>
         </CardHeader>
         <CardBody>
-          <div className="overflow-x-auto">
-            <Table>
-              {/* Table Header */}
-              <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-                <TableRow>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    No
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
-                  >
-                    Nomor Tagihan
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Nomor Kamar
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Penghuni
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Periode
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 "
-                  >
-                    Jatuh Tempo
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Nominal
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Metode Pembayaran
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Tanggal Pembayaran
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
-                  >
-                    Status
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
-                  >
-                    Action
-                  </TableCell>
-                </TableRow>
-              </TableHeader>
-              <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
-                { (billsData.length > 0 && !loading.fetch) && billsData.map((data: ResponseBills, index: number)=>{
-                  return(
-                    <TableRow key={index}>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{index+1}</TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.billNumber}</TableCell>
+          { isMobile ? (
+            <>
+             {(billsData.length > 0 && !loading.fetch) && billsData.map((data: ResponseBills, index: number)=>{
+              return(
+              <Card key={index} className="overflow-hidden">
+                <CardHeader>
+                  <div className="flex justify-between items-center font-bold">
+                    {data?.billNumber}
+                    <div className="flex items-center gap-2">
+                        <Button onClick={()=>handleOpenModal('update', data)} className="bg-blue-500 hover:bg-blue-600"><AppRegistrationIcon/></Button>
+                        <Button onClick={()=>handleOpenModal('delete', data)} className="bg-red-500 hover:bg-red-600"><DeleteIcon/></Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardBody>
+                  <div className="grid grid-cols-12">
+                    <Label className="col-span-5">Nomor Kamar</Label>
+                    <Label className="col-span-1">:</Label>
+                    <Label className="col-span-6">{data?.room?.roomNumber}</Label>
+                  </div>
+                  <div className="grid grid-cols-12">
+                    <Label className="col-span-5">Penghuni</Label>
+                    <Label className="col-span-1">:</Label>
+                    <Label className="col-span-6">{data?.occupant?.name}</Label>
+                  </div>
+                  <div className="grid grid-cols-12">
+                    <Label className="col-span-5">Periode</Label>
+                    <Label className="col-span-1">:</Label>
+                    <Label className="col-span-6">{renderBillPeriodBody(data?.billingPeriod)}</Label>
+                  </div>
+                  <div className="grid grid-cols-12">
+                    <Label className="col-span-5">Jatuh Tempo</Label>
+                    <Label className="col-span-1">:</Label>
+                    <Label className="col-span-6">{data?.dueDate}</Label>
+                  </div>
+                  <div className="grid grid-cols-12">
+                    <Label className="col-span-5">Nominal</Label>
+                    <Label className="col-span-1">:</Label>
+                    <Label className="col-span-6">
+                      {Number(data?.totalAmount).toLocaleString('id-ID',{
+                        style: 'currency',
+                        currency: 'IDR'
+                      })}
+                    </Label>
+                  </div>
+                  <div className="grid grid-cols-12">
+                    <Label className="col-span-5">Status</Label>
+                    <Label className="col-span-1">:</Label>
+                    <Label className="col-span-6">{renderLongStatus(data?.status)}</Label>
+                  </div>
+                </CardBody>
+                <CardBody className="p-0! overflow-hidden">
+                  <Button onClick={()=>router.push(`/manajemen/tagihan/${data.id}`)} className="bg-yellow-500 hover:bg-yellow-600 text-white w-full h-full py-2 rounded-0!">
+                    <ReceiptShortIcon/>
+                    Detail Tagihan
+                  </Button>
+                </CardBody>
+              </Card>
+              )
+             }
+             )} 
+            </>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                {/* Table Header */}
+                <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                  <TableRow>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      No
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                    >
+                      Nomor Tagihan
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Nomor Kamar
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Penghuni
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Periode
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 "
+                    >
+                      Jatuh Tempo
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Nominal
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                    >
+                      Yang Telah Terbayar
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                    >
+                      Status
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                    >
+                      Action
+                    </TableCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className='divide-y divide-gray-100 dark:divide-white/[0.05]'>
+                  { (billsData.length > 0 && !loading.fetch) && billsData.map((data: ResponseBills, index: number)=>{
+                    return(
+                      <TableRow key={index}>
+                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{index+1}</TableCell>
+                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data.billNumber}</TableCell>
 
-                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
-                        <div className="rounded-sm border bg-gray-100 size-[30px] flex items-center justify-center ">
-                          { data?.room?.roomNumber?.toString().padStart(2, '0') }
-                        </div>
-                      </TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.occupant?.name}</TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm ">{renderBillPeriodBody(data?.billingPeriod)}</TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.dueDate}</TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
-                        {Number(data?.totalAmount)?.toLocaleString('id-ID', {
-                          style: 'currency',
-                          currency: "IDR"
-                        })}
-                      </TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm flex justify-between items-center">{renderPaymentMethodBody(data.paymentMethod)}</TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{""}</TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 text-center dark:text-white text-theme-sm">{renderBodyStatus(data.status)}</TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 text-center dark:text-white text-theme-sm">
-                        <div className="flex justify-center gap-4">
-                            <Button onClick={()=>handleOpenModal('detail', data)} className="bg-yellow-500 hover:bg-yellow-600 text-white"><ReceiptShortIcon/></Button>
-                            <Button onClick={()=>handleOpenModal('update', data)} className="bg-blue-500 hover:bg-blue-600"><AppRegistrationIcon/></Button>
-                            <Button onClick={()=>handleOpenModal('delete', data)} className="bg-red-500 hover:bg-red-600"><DeleteIcon/></Button>
+                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                          <div className="rounded-sm border bg-gray-100 size-[30px] flex items-center justify-center ">
+                            { data?.room?.roomNumber?.toString().padStart(2, '0') }
                           </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-            { loading.fetch && (
-              <div className="py-10 text-center flex w-full text-gray-400">
-                <LoadingTable/>
-              </div>
-            )}
-            { (billsData.length === 0 && !loading.fetch) && (
-              <div className="py-10 text-center flex justify-center text-gray-400 w-full">
-                Data tagihan tidak ditemukan
-              </div>
-            )}
-          </div>
+                        </TableCell>
+                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.occupant?.name}</TableCell>
+                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm ">{renderBillPeriodBody(data?.billingPeriod)}</TableCell>
+                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.dueDate}</TableCell>
+                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                          {Number(data?.totalAmount)?.toLocaleString('id-ID', {
+                            style: 'currency',
+                            currency: "IDR"
+                          })}
+                        </TableCell>
+                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                          {Number(data?.totalPaid)?.toLocaleString('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR'
+                          })}
+                        </TableCell>
+                        <TableCell className="px-5 py-4 sm:px-6 text-center dark:text-white text-theme-sm">{renderBodyStatus(data.status)}</TableCell>
+                        <TableCell className="px-5 py-4 sm:px-6 text-center dark:text-white text-theme-sm">
+                          <div className="flex justify-center gap-4">
+                              <Button onClick={()=>router.push(`/manajemen/tagihan/${data.id}`)} className="bg-yellow-500 hover:bg-yellow-600 text-white"><ReceiptShortIcon/></Button>
+                              <Button onClick={()=>handleOpenModal('update', data)} className="bg-blue-500 hover:bg-blue-600"><AppRegistrationIcon/></Button>
+                              <Button onClick={()=>handleOpenModal('delete', data)} className="bg-red-500 hover:bg-red-600"><DeleteIcon/></Button>
+                            </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+              { loading.fetch && (
+                <div className="py-10 text-center flex w-full text-gray-400">
+                  <LoadingTable/>
+                </div>
+              )}
+              { (billsData.length === 0 && !loading.fetch) && (
+                <div className="py-10 text-center flex justify-center text-gray-400 w-full">
+                  Data tagihan tidak ditemukan
+                </div>
+              )}
+            </div>
+          )}
           <Pagination
             currentPage={pagination.currentPage}
             totalPages={pagination.totalPage}

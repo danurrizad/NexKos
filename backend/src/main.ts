@@ -37,16 +37,6 @@ async function bootstrap() {
       'https://g5xqwfz1-3000.asse.devtunnels.ms',
       'https://nex-kos.vercel.app',
     ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Accept',
-      'Authorization',
-      'X-Requested-With',
-      'Origin',
-      'Access-Control-Allow-Origin',
-    ],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
     credentials: true,
   });
 

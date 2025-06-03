@@ -21,7 +21,7 @@ import { useAlert } from "@/context/AlertContext";
 import LoadingTable from "../tables/LoadingTable";
 import Pagination from "../tables/Pagination";
 import usePaymentService from "@/services/PaymentService";
-import { AppRegistrationIcon, DeleteIcon, OpenNewIcon, PreviewIcon } from "@/icons";
+import { AppRegistrationIcon, CurrencyExchangeIcon, DeleteIcon, DevicesIcon, OpenNewIcon, PreviewIcon } from "@/icons";
 import Image from "next/image";
 import Select from "../form/Select";
 import Input from "../form/input/InputField";
@@ -40,7 +40,6 @@ interface ResponseProps{
   paymentDate: string,
   amountPaid: string,
   paymentMethod: string,
-  gatewayName: string,
   note: string,
   paymentProof: string,
   status: string,
@@ -52,7 +51,6 @@ interface FormBody{
   paymentDate: string,
   amountPaid: string,
   paymentMethod: string,
-  gatewayName: string,
   note: string,
   paymentProof: File | null,
   transactionReference: string
@@ -137,7 +135,6 @@ export default function Penghuni() {
     paymentDate: "",
     amountPaid: "",
     paymentMethod: "",
-    gatewayName: "",
     note: "",
     paymentProof: null,
     transactionReference: ""
@@ -147,7 +144,6 @@ export default function Penghuni() {
     paymentDate: "",
     amountPaid: "",
     paymentMethod: "",
-    gatewayName: "",
     note: "",
     paymentProof: null,
     transactionReference: ""
@@ -180,7 +176,6 @@ export default function Penghuni() {
   const fetchPayments = async() => {
     try {
       const response = await getAllPayments(pagination.currentPage, pagination.limit)
-      console.log("Response payments: ", response?.data.data)
       setPaymentsData(response?.data?.data)
       setPagination({
         currentPage: response?.data?.meta?.page || 0,
@@ -265,7 +260,6 @@ export default function Penghuni() {
         paymentDate: data.paymentDate,
         amountPaid: data.amountPaid,
         paymentMethod: data.paymentMethod,
-        gatewayName: data.gatewayName,
         note: data.note,
         transactionReference: data.transactionReference
       }
@@ -311,7 +305,6 @@ export default function Penghuni() {
       paymentDate: "",
       amountPaid: "",
       paymentMethod: "",
-      gatewayName: "",
       note: "",
       paymentProof: null,
       transactionReference: ""
@@ -356,7 +349,6 @@ export default function Penghuni() {
       formData.append("paymentDate", form.paymentDate);
       formData.append("amountPaid", form.amountPaid);
       formData.append("paymentMethod", form.paymentMethod);
-      formData.append("gatewayName", form.gatewayName);
       formData.append("note", form.note);
       formData.append("transactionReference", form.transactionReference);
 
@@ -415,8 +407,9 @@ export default function Penghuni() {
             <CardHeader>{type==="add" ? "Tambah" : "Ubah"} Pembayaran</CardHeader>
             <CardBody>
                <div className="mb-4">
-                <Label>Nomor Tagihan<span className="text-red-500">*</span></Label>
+                <Label required={type==='add'}>Nomor Tagihan</Label>
                 <Select
+                  isDisable={type==='update'}
                   options={optionsBill}
                   placeholder="Pilih nomor tagihan"
                   showSearch={true}
@@ -435,7 +428,7 @@ export default function Penghuni() {
                 { formErrors?.billId && <Label className="text-red-500 font-light">{formErrors.billId}</Label>}
               </div>
               <div className="mb-4">
-                <Label>Jumlah yang Dibayarkan<span className="text-red-500">*</span></Label>
+                <Label required>Jumlah yang Dibayarkan</Label>
                 <Input
                   value={form.amountPaid}
                   onChange={(e)=>{
@@ -447,7 +440,7 @@ export default function Penghuni() {
                 { formErrors?.amountPaid && <Label className="text-red-500 font-light">{formErrors.amountPaid}</Label>}
               </div>
               <div className="mb-4">
-                <Label>Metode Pembayaran<span className="text-red-500">*</span></Label>
+                <Label required>Metode Pembayaran</Label>
                 <Select
                   options={optionsPaymentMethods}
                   defaultValue={optionsPaymentMethods.find(opt=>opt.value === form.paymentMethod)?.value}
@@ -460,13 +453,6 @@ export default function Penghuni() {
                 { formErrors?.paymentMethod && <Label className="text-red-500 font-light">{formErrors.paymentMethod}</Label>}
               </div>
               <div className="mb-4">
-                <Label>Nama Gateway</Label>
-                <Input
-                  value={form.gatewayName}
-                  onChange={(e)=>setForm({ ...form, gatewayName: e.target.value})}
-                />
-              </div>
-              <div className="mb-4">
                 <Label>Catatan</Label>
                 <Input
                   value={form.note}
@@ -474,7 +460,7 @@ export default function Penghuni() {
                 />
               </div>
               <div className="mb-4">
-                <Label>Bukti Pembayaran<span className="text-red-500">*</span></Label>
+                <Label required>Bukti Pembayaran</Label>
                 <InputImg
                   type="file"
                   onChange={(e)=>{
@@ -487,7 +473,7 @@ export default function Penghuni() {
                 { formErrors?.paymentProof && <Label className="text-red-500 font-light">{formErrors.paymentProof}</Label>}
               </div>
               <div className="mb-4">
-                <Label>Nomor Referensi<span className="text-red-500">*</span></Label>
+                <Label required>Nomor Referensi</Label>
                 <Input
                   type="text"
                   placeholder="Nomor referensi yang ada di bukti pembayaran"
@@ -613,6 +599,35 @@ export default function Penghuni() {
     }
   }
 
+  const renderPaymentMethodBody = (paymentMethod: string) => {
+    if(!paymentMethod) return
+    return(
+      <Badge 
+        color={
+          paymentMethod==='gateway' ? "info" : 
+          paymentMethod==='transfer' ? "success" : 
+          paymentMethod==='tunai' ? 'warning' : 
+          paymentMethod==='dana' ? "info" : 
+          paymentMethod==='qris' ? "light" : 
+          paymentMethod==='ovo' ? "success" : 
+          "light"} 
+        startIcon={
+          paymentMethod==='manual' ? <CurrencyExchangeIcon/> : 
+          paymentMethod==='transfer' ? <CurrencyExchangeIcon/> : 
+          paymentMethod==='tunai' ? <CurrencyExchangeIcon/> : 
+          // paymentMethod==='tunai' ? <FileIcon/> : 
+          paymentMethod==='gateway' ? <DevicesIcon/> : 
+          paymentMethod==='dana' ? <CurrencyExchangeIcon/> : 
+          paymentMethod==='qris' ? <CurrencyExchangeIcon/> : 
+          paymentMethod==='ovo' ? <CurrencyExchangeIcon/> : 
+          ""
+        } 
+      >
+        {paymentMethod.toUpperCase()}
+      </Badge>
+    )
+  }
+
   return (
     <div className="">
       { renderModal(showModal.type) }
@@ -673,12 +688,6 @@ export default function Penghuni() {
                             isHeader
                             className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 "
                         >
-                            Nama Gateaway
-                        </TableCell>
-                        <TableCell
-                            isHeader
-                            className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 "
-                        >
                             Catatan
                         </TableCell>
                         <TableCell
@@ -725,8 +734,9 @@ export default function Penghuni() {
                             currency: 'IDR'
                         })}
                       </TableCell>
-                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.paymentMethod}</TableCell>
-                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.gatewayName}</TableCell>
+                        <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">
+                          {renderPaymentMethodBody(data?.paymentMethod)}
+                        </TableCell>
                         <TableCell className="px-5 py-4 sm:px-6 text-start dark:text-white text-theme-sm">{data?.note}</TableCell>
                         <TableCell className="px-5 py-4 sm:px-6 text-center dark:text-white text-theme-sm">
                             <Button className="bg-gray-400 hover:bg-gray-500 text-white" onClick={()=>handleOpenModal('preview', data)}><PreviewIcon/></Button>
